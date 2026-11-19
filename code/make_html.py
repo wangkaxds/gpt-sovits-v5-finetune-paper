@@ -23,7 +23,7 @@ hr { border: none; border-top: 1px solid #ddd; margin: 18px 0; }
 """
 html = f"""<!doctype html>
 <html lang="zh"><head><meta charset="utf-8">
-<title>GPT-SoVITS V5 微调：负结果、选择偏差与分句效应</title>
+<title>GPT-SoVITS V5 微调的系统性负结果</title>
 <style>{css}</style></head><body>
 {body}
 </body></html>"""
