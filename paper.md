@@ -624,7 +624,19 @@ else:
     vits_model.cfm = vits_model.cfm.merge_and_unload()
 ```
 
-修复后，ada8 会创建 `attn_norm.linear`，all8 会创建 `ff.0/ff.2`，全参会走 direct load。
+修复后，ada8 会创建 `attn_norm.linear`，all8 会创建 `ff.ff.0.0/ff.ff.2`，全参会走 direct load。
+
+用 `code/test_lora_target_inference.py` 对 Checkpoint 键做静态验证，恢复出的目标为：
+
+```
+r16   rank 16 targets ['attn.to_out.0', 'attn.to_q', 'attn.to_v']
+ada8  rank 8  targets ['attn_norm.linear']
+all8  rank 8  targets ['attn.to_k', 'attn.to_out.0', 'attn.to_q', 'attn.to_v', 'ff.ff.0.0', 'ff.ff.2']
+vo16  rank 16 targets ['attn.to_out.0', 'attn.to_v']
+refenc rank 4 targets ['attn.to_q']
+```
+
+这说明目标恢复逻辑能覆盖非标准模块；但音频级重测仍未完成。
 
 ### 9.3 重测状态
 
