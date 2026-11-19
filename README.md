@@ -1,5 +1,8 @@
 # TTS Voice C: Fine-Tuning vs Zero-Shot on GPT-SoVITS V5
 
+**Paper:** [paper.md](paper.md) · [paper.pdf](paper.pdf)  
+**Repo:** https://github.com/wangkaxds/gpt-sovits-v5-finetune-paper
+
 这是一篇**负结果 + 一个真实增益**的实验论文，范围从微调实验开始，不包含游戏解包、数据清洗等前置工作。
 
 ## 结论
