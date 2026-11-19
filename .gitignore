@@ -1,0 +1,15 @@
+# Data and model files are intentionally excluded.
+*.wav
+*.ogg
+*.mp3
+*.flac
+*.pth
+*.ckpt
+*.safetensors
+*.pt
+
+__pycache__/
+*.pyc
+.DS_Store
+Thumbs.db
+.playwright-mcp/
