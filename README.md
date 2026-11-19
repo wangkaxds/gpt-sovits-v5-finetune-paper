@@ -1,4 +1,4 @@
-# GPT-SoVITS V5 微调：系统性负结果与工程审计
+﻿# GPT-SoVITS V5 微调：系统性负结果与工程审计
 
 **Paper:** [paper.md](paper.md) · [paper.pdf](paper.pdf)  
 **Repo:** https://github.com/wangkaxds/gpt-sovits-v5-finetune-paper
@@ -11,7 +11,7 @@
 - **turbo8** 相对 turbo4：SV **+0.0052**（p=.013）；ASR −0.0045（p=.135）。
 - **cut5** 分句：30 句 test、5 个 seed，SV **0.9041** vs cut0 **0.8811**，ASR 0.9236 vs 0.9203；成本不变。
 - **best-of-5 已撤回**：SV 增益是 max-of-k 选择偏差（P≈0.89），第二个 ASR 只 +0.0023。
-- **工程审计**：上游 `TTS.py` 把 LoRA 目标硬编码为 q/k/v/out，导致 `ada8` 完全不加载、`all8` 的 FF 被忽略、`last5` 全参加载未验证。受影响路线在论文中标为“无效/部分无效”，不作为模型结论。
+- **工程审计**：上游 `TTS.py` 把 LoRA 目标硬编码为 q/k/v/out，导致 `ada8` 完全不加载、`all8` 的 FF 被忽略、`last5` 全参加载未验证。修复后重测：`ada8_s300` test SV +0.0002 / ASR −0.008；`all8_s1200` test SV +0.0010（CI +0.0003…+0.0017）/ ASR +0.003（均 seed1）。all8 刚过配对 MDE≈0.0010，但效应量只有 0.001，仍不能称可用增益。`last5` 权重已删，无法复核。
 - **ref_enc 解冻**后 Loss 下降但 SV/ASR 同降，是最强的“目标不匹配”证据。
 
 ## 文件
@@ -44,3 +44,4 @@ python code/inspect_lora_modules.py
 ## 引用
 
 如果这篇记录对你有用，请引用本仓库 URL，并注明 GPT-SoVITS V5 的原始项目。
+
