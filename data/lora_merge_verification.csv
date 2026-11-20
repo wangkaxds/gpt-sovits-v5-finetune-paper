@@ -1,0 +1,6 @@
+checkpoint,rank,alpha,n_modules,max_abs_error,mean_abs_error,max_relative_error,all_finite,untouched_layer,untouched_max_abs_delta,passed
+kan_full_e2_s5668_l32.pth,32,32.0,88,1.0989606380462646e-07,1.0495028564639806e-09,3.064777766211272e-06,True,estimator.time_embed.time_mlp.0,0.0,True
+kan_v5dev_ada8_e1_s300_l8.pth,8,8.0,22,5.9459125623106956e-08,6.394245890348961e-10,1.8340642433217772e-05,True,estimator.time_embed.time_mlp.0,0.0,True
+kan_v5dev_all8_e1_s1200_l8.pth,8,8.0,132,1.8669379642233253e-07,1.0741274826657362e-09,0.00047605003922463824,True,estimator.time_embed.time_mlp.0,0.0,True
+kan_v5dev_r16_e1_s300_l16.pth,16,16.0,66,5.651963874697685e-08,1.0258956823780503e-09,0.00018230045801348284,True,estimator.time_embed.time_mlp.0,0.0,True
+kan_v5dev_refenc_e1_s300_l4.pth,4,4.0,22,5.822948878630996e-08,1.1706842414663495e-09,0.00012052366928771632,True,estimator.time_embed.time_mlp.0,0.0,True

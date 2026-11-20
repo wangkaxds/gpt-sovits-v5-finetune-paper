@@ -14,6 +14,9 @@ h3 { font-size: 12pt; margin-top: 16px; }
 p { text-align: justify; }
 table { border-collapse: collapse; width: 100%; margin: 10px 0 14px; font-size: 9.2pt;
         table-layout: fixed; }
+thead { display: table-header-group; }
+tbody tr { break-inside: avoid; }
+p { orphans: 3; widows: 3; }
 th, td { border: 1px solid #bbb; padding: 5px 6px; text-align: left;
          vertical-align: top; overflow-wrap: anywhere; word-break: break-word; }
 th { background: #eef2f7; }
@@ -24,7 +27,7 @@ blockquote { border-left: 3px solid #999; margin: 8px 0; padding-left: 10px; col
 hr { border: none; border-top: 1px solid #ddd; margin: 18px 0; }
 @media print {
   h2, h3 { break-after: avoid; }
-  tr, img, pre { break-inside: avoid; }
+  tr, img, pre, li { break-inside: avoid; }
   table { font-size: 8.4pt; }
 }
 """

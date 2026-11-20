@@ -1,6 +1,6 @@
-﻿# GPT-SoVITS V5 微调的系统性负结果：训练模块、参考条件与推理加载的实证研究
+# GPT-SoVITS V5 微调的系统性负结果：训练模块、参考条件与推理加载的实证研究
 
-**声音 C 实验论文 v2.1（审计修订版）**
+**声音 C 实验论文 v2.2（深度审计修订版）**
 2026-11-20
 基于 GPT-SoVITS V5（2026-10-06 本地包）的离线实验记录
 
@@ -14,9 +14,9 @@
 
 在**推理加载正确的标准 LoRA 路线**（q/v/out）上，没有任何微调达到可用、稳定的增益；`all8_s1200` 的 +0.0010 在本样本内有小效应，但只有 seed1、效应量很小。最接近的 `vo16_s300` 在 seed1–3 重测中 SV 差为 −0.0003 / +0.0005 / −0.0015，均值 −0.0004（t=−0.75），没有检测到增益。后五层 `last5/last5b` 没有可恢复权重；`ref_enc` 解冻后 SV 与 ASR 同时下降；GPT s1 指标上 SV 下降、ASR 上升，听感未做盲测。
 
-推理侧有两个方向稳定的效应：turbo 8 步相对 4 步，30 句 × 5 seeds，SV +0.0052（p=.013）；`cut5` 分句相对 `cut0`，3 个配对 seed 的 SV +0.0244（p=.011），cut5 自身 5 seed 均值 0.9041，而 cut0 3 seed 均值 0.8811；ASR 在 3-seed 配对中 0.9209 vs 0.9203；cut5 5-seed 均值 0.9236。采样步数相同，但 cut5 的 seed1 平均音频时长增加 9.1%，总延迟/GPU 成本未测。best-of-5 的 SV +0.0127 是 max-of-k 选择偏差（零假设 P≈0.886），已撤回。
+推理侧有两个方向一致、但强度不同的效应：turbo 8 步相对 4 步，30 句 × 5 seeds，SV +0.0052（p=.013）；`cut5` 分句相对 `cut0`，3 个配对 seed 的 SV +0.0244（p=.011），cut5 自身 5 seed 均值 0.9041，而 cut0 3 seed 均值 0.8811；ASR 在 3-seed 配对中 0.9209 vs 0.9203；cut5 5-seed 均值 0.9236。采样步数相同，但 cut5 的 seed1 平均音频时长增加 9.1%，总延迟/GPU 成本未测。best-of-5 的 SV +0.0127 是 max-of-k 选择偏差（零假设 P≈0.886），已撤回。
 
-本文还记录了一个关键工程发现：上游 `TTS.py` 把 LoRA 目标硬编码为 `to_k,to_q,to_v,to_out.0`。这使 `ada8`（attn_norm）完全不加载，`all8` 的 FF 分支被忽略，`last5` 混合 Checkpoint 可能被误当 LoRA。修复后，`ada8/all8` 的 10 句 val 与 30 句 test（seed1）已重测：`ada8_s300` test SV +0.0002（CI −0.0029…+0.0030）、ASR −0.008；`all8_s1200` test SV +0.0010（CI +0.0003…+0.0017；配对 p=.0084）、ASR +0.003。all8 在本样本内有统计上可检测的小效应，但只有 seed1、效应量 0.001、未过多重比较校正，不能称为可用或稳定增益。`last5/last5b` 权重已删除，无法复核，仍不作为结论。
+本文还记录了一个关键工程发现：上游 `TTS.py` 把 LoRA 目标硬编码为 `to_k,to_q,to_v,to_out.0`。这使 `ada8`（attn_norm）完全不加载，`all8` 的 FF 分支被忽略，`last5` 混合 Checkpoint 可能被误当 LoRA。修复后，`ada8/all8` 的 10 句 val 与 30 句 test（seed1）已重测：`ada8_s300` test SV +0.0002（CI −0.0029…+0.0030）、ASR −0.008；`all8_s1200` test SV +0.0010（CI +0.0003…+0.0017；配对 p=.0084）、ASR +0.003。all8 在本样本内有统计上可检测的小效应，但只有 seed1、效应量 0.001、未过多重比较校正，不能称为可用或稳定增益。`last5/last5b` 权重已删除，无法复核，仍不作为结论。修复后的加载器还对 5 个 Checkpoint 的 330 个目标模块逐模块核对 `ΔW` 与 `(α/r)BA`，最大绝对误差 1.87×10⁻⁷，未修改层变化为 0。
 
 **关键词**：GPT-SoVITS V5；零样本 TTS；LoRA；负结果；参考条件；推理加载；选择偏差；分句
 
@@ -168,6 +168,17 @@ kan_clean_exp/             # 863 句子集，硬链接/复制
 2. 标准 LoRA rank 扫描与数据/模块消融；
 3. 推理侧扫描（步数、CFG、seed、参考、分句）；
 4. 统计审计与工程审计（best-of-5 撤回、LoRA 加载缺陷）。
+
+这些路线不是同时铺开的网格，而是由前一段的失败推动的：
+
+- **标准 q/v/out → adaLN/FFN**：r4–r32 的 val 平台说明“只加 rank”没有用；于是把更新从注意力投影扩展到条件调制（ada8）和 FFN（all8），检验是不是覆盖模块不够。
+- **CFM 内部 → 参考条件**：refenc/固定参考/外部参考把问题移到音色锚点 `ref_enc → ge`，因为 V5 的音色主要由参考侧决定，CFM LoRA 未必能直接改身份。
+- **微调 → 推理**：当微调在验证集和工作点上都没有稳定收益时，turbo 步数和 cut5 分句仍显示出可测的推理侧差异；这部分不是“训练失败后的补救成功”，而是另一个问题层面。
+- **推理差异 → 加载审计**：ada8 的五个 Checkpoint 指标完全相同，才把“模型没学会”与“权重没加载”分开；没有这一步，前面的负结果会被工程故障污染。
+
+这个顺序也解释了为什么论文同时有“负结果”“两个推理侧效应”和“工程审计”：它们回答的是不同层的问题，不能互相替代。
+
+19 条路线的证据矩阵在 `data/evidence_matrix.csv`，逐项列出训练日志、完整配置、Checkpoint、模型级加载验证、val、test、多 seed、统计检验和人耳听感。矩阵里的 `structural` 只表示 Checkpoint 结构审计，不等于模型把 LoRA 应用到了正确层；只有 `yes` 才表示做过运行时验证。
 
 ---
 
@@ -569,6 +580,8 @@ SV t=4.22，df=4，p=.013；ASR p=.135。5/5 seed 为正。val：turbo8 0.9026 >
 
 MDE 不是“观察到的效应必须超过才算显著”的门槛。它回答的是：**如果真实效应等于某个值，这个设计有多大概率检测到它**。本文按双侧 α=.05、power=.80 计算的 MDE 是设计灵敏度，不是对已观察效应的判决线。
 
+计算假设：30 个句子差近似独立同分布、近似正态；没有多重比较校正；用配对差的样本 SD 作为真实 SD 的估计。若这些假设不成立，MDE 只能作为量级参考。
+
 以 cut5 的 30 句配对差估算，SV 差的标准差为 0.0305，ASR 差为 0.0681。按双侧 α=.05、power=.80：
 
 - n=30 时，MDE 约为 SV **0.0156**、ASR **0.0348**；
@@ -604,6 +617,23 @@ MDE、CI、p 值和实际效应量回答的是不同问题：MDE 是设计能测
 
 同一句的 5 个 seed 不是 5 个独立句子。我们做的是 seed 级配对 t（每个 seed 先聚合 30 句），不是把 150 个生成当独立样本；句子级 bootstrap 只用于单 seed 的 CI。两者不能混用。
 
+| 分析 | 独立单位 | n | 方法 | 这个检验估计什么 |
+|---|---|---:|---|---|
+| all8 seed1 | 句子（同一 seed 内） | 30 对 | 配对 t、Wilcoxon、符号检验 | 该 seed 的 30 句文本是否支持正向差异；不能外推到其他 seed |
+| turbo8 vs turbo4 | 随机种子 | 5 | seed 级配对 t、符号检验 | 5 个种子上的方向是否稳定；不能当 150 个独立文本 |
+| cut5 vs cut0 | 随机种子 | 3 | seed 级配对 t、Wilcoxon、符号检验 | 3 个可配对的 seed 上是否同向；n=3 时正态/对称假设影响很大 |
+| vo16 vs v5dev | 随机种子 | 3 | seed 级配对 t | 3 个 seed 的均值是否偏离 0；不证明真效应精确为 0 |
+| val 10 句 | 句子（单 seed） | 10 | 描述统计 | 只用于 Checkpoint 选择，不用于确认性检验 |
+
+敏感性检验（`code/stats_sensitivity.py`）：
+
+- all8：配对 t p=.0084，Wilcoxon p=.0081，符号检验 21/30 p=.0428；方向较一致，但仍只有 seed1。
+- turbo8：配对 t p=.0135，符号检验 5/5 p=.0625；小样本下符号检验不显著。
+- cut5：配对 t p=.0111，Wilcoxon 和符号检验均为 p=.25；3/3 同向，但 n=3 无法把 t 的正态假设当作唯一证据。
+- vo16：配对 t p=.534；没有检测到增益。
+
+**解释**：all8 的 t/Wilcoxon 一致，说明“30 句内存在小差异”较稳；符号检验和多重比较提醒它仍不是强证据。cut5 的 t 显著但 Wilcoxon/符号检验不显著，说明“3-seed 均值同向”不能单独支撑强断言。
+
 ### 8.5 多重比较
 
 19 条路线、多个 Checkpoint、多个 seed；没有做 Bonferroni/FDR。所有 p 值都应视为**探索性**，不能直接当作确认性发现。
@@ -611,6 +641,8 @@ MDE、CI、p 值和实际效应量回答的是不同问题：MDE 是设计能测
 - `all8_s1200` 的 p=.0084 看似小，但按 19 条路线（还未计多个 Checkpoint 和推理配置）做 Bonferroni，阈值约为 .05/19≈.0026；它不通过。再叠加 test 复用、单 seed、效应量仅 0.001，不能称为可靠提升。
 - `cut5` 的 3-seed 配对 p=.011，同样没有跨推理配置校正；它的证据是 3-seed 配对 + cut5 自身 5 seed 方向一致 + 较大效应量，而不是单个 p 值。
 - 微调路线的“没有显著增益”不是“真效应为零”的证明；它只表示当前样本没有提供足够证据。若真实效应很小，30 句本来就可能检测不到。
+
+这里没有事先注册的“主比较”清单，因此不存在唯一正确的检验家族。19 条路线的 Bonferroni 阈值是**保守敏感性分析**；如果事后挑一个较小的家族（例如只看 5 条重点路线）得到更宽松的阈值，那本身就是选择性的，不能用来提升 all8 的证据等级。本文保留 p=.0084 作为“当前样本内的小差异证据”，不把它写成确认性结论。
 
 ### 8.6 SV 是否代表“更像”
 
@@ -639,7 +671,7 @@ cut5 改变的是文本切分，不是声学模型；它可能通过以下路径
 - 句子级 bootstrap（seed1）给 +0.0194，CI +0.0097…+0.0309；
 - cut5 的 5-seed 均值 0.9041 是**描述性**的；cut5 的 seed4/5（0.9024 / 0.9018）没有对应的 cut0 观测，不能进入配对检验。
 
-因此：**3-seed 配对比较支持“cut5 在这 3 个 seed 上更高”；5-seed 平均只说明 cut5 自身稳定，不是 5×5 配对证据。** test 复用、时长混杂、缺失 cut0 seed4/5 都限制了因果解释。
+因此：**3-seed 配对比较支持“cut5 在这 3 个 seed 上更高”；5-seed 平均只说明 cut5 自身稳定，不是 5×5 配对证据。** 敏感性：Wilcoxon 和符号检验均为 p=.25（3/3 同向，但 n=3）；不能把 t 的 p=.011 当作唯一证据。test 复用、时长混杂、缺失 cut0 seed4/5 都限制了因果解释。
 
 ### 8.8 结论置信度
 
@@ -647,8 +679,8 @@ cut5 改变的是文本切分，不是声学模型；它可能通过以下路径
 |---|---|---|
 | 标准 q/v/out LoRA 没有稳定/可用增益 | 中高 | 3 seed、30 句；但 30 句对小效应不敏感，不能证明真效应为零 |
 | refenc 崩 | 高 | 多 Checkpoint、SV/ASR 同降；机制解释仍是假设 |
-| turbo8 > turbo4 | 中 | 5 seed、p=.013、5/5 同向；test 复用，未做人耳 |
-| cut5 > cut0 | 中 | 3-seed 配对 p=.011、效应量大；但 test 复用、时长混杂、非 5×5 配对 |
+| turbo8 > turbo4 | 中低 | 5 seed、配对 t p=.013、5/5 同向；符号检验 p=.0625，test 复用，未做人耳 |
+| cut5 > cut0 | 中低 | 3-seed 配对 t p=.011、效应量大；但 Wilcoxon/符号 p=.25、test 复用、时长混杂、非 5×5 配对 |
 | all8 有小的正向差异 | **探索性** | seed1 test p=.0084、CI 不含 0；但只有 1 seed、效应 0.001、未过多重比较校正 |
 | ada8 无可用增益 | 低/中 | 修复后 test +0.0002、ASR −0.008；只有 seed1 |
 | last5/last5b | **无法验证** | 权重删除、加载路径未复核 |
@@ -693,12 +725,7 @@ if if_lora_v3 == False or not lora_keys:
     if result.unexpected_keys:
         raise RuntimeError("unexpected VITS keys")
 else:
-    targets = set()
-    for key in lora_keys:
-        module = key.split(".lora_A.")[0]
-        module = module.split("estimator.", 1)[-1]
-        module = re.sub(r"transformer_blocks\.\d+\.", "", module)
-        targets.add(module)
+    targets = _infer_lora_targets(lora_keys)
     lora_config = LoraConfig(target_modules=sorted(targets), ...)
     vits_model.cfm = get_peft_model(vits_model.cfm, lora_config)
     vits_model.load_state_dict(dict_s2["weight"], strict=False)
@@ -710,10 +737,22 @@ else:
 加载时还检查三类错误，而不是只依赖 `strict=False`：
 
 - `missing_keys` / `unexpected_keys` 中的 adapter 键必须为空；其它 unexpected 键直接报错；
-- 合并前记录 CFM 参数校验和，`merge_and_unload` 后必须观察到非零差异，表明参数确实被改写；这不证明音频变好。
+- 合并前记录 CFM 参数校验和，`merge_and_unload` 后必须观察到非零差异，表明参数确实被改写；这不证明音频变好；
 - 合并后 state dict 不允许残留 `lora_` 键。
 
-完整实现与实验记录见 `code/TTS_LORA_LOADER_FIX.md`。
+进一步的逐模块验证不依赖全局校验和：在合并前记录每个目标模块的权重，合并后计算 `ΔW = W_after - W_before`，并与 `(α/r) B A` 比较；同时检查未修改层、NaN/Inf 和张量范数。结果：
+
+| 指标 | 结果 | 用途 |
+|---|---:|---|
+| 验证的目标模块 | 330 个（5 个 Checkpoint） | 逐模块覆盖 |
+| 最大绝对误差 | 1.87×10⁻⁷ | 捕获局部错误层/形状错误 |
+| 最大相对误差 | 4.76×10⁻⁴ | 跨模块、跨量级比较 |
+| 非有限值 | 0 | 检查 NaN/Inf |
+| 未修改层最大变化 | 0.0 | 检查更新是否泄漏到非目标层 |
+
+5 个 Checkpoint 是 r16（66 模块）、ada8（22）、all8（132）、refenc（22）、full（88）；`last5/last5b` 没有权重，未纳入。PEFT 配置使用 `lora_alpha = rank`，所以 `α/r=1`；实测差值符合 `B A`，不是只“加载成功”。指标含义：最大绝对误差看最坏元素；平均绝对误差看整体偏差；相对误差用预期更新的最大幅度归一化；范数看更新是否消失或爆炸；未修改层差值检查作用域。
+
+完整实现与实验记录见 `code/TTS_LORA_LOADER_FIX.md`；逐模块结果在 `data/lora_merge_verification.csv` 和 `data/lora_merge_module_audit.csv`；异常路径的合成测试在 `code/test_lora_loader_guards.py`。
 
 用 `code/test_lora_target_inference.py` 对 Checkpoint 键做静态验证，恢复出的目标为：
 
@@ -936,7 +975,16 @@ python stats_cut5.py
 ```bash
 python code/stats_cut5.py
 python code/stats_finetune_retest.py
+python code/stats_sensitivity.py
 python code/validate_paper.py
+```
+
+逐模块 LoRA 审计需要本地 V5 树和 Checkpoint；公共 CSV 只保留结果，不能单独重跑模型级检查：
+
+```bash
+set GPT_SOVITS_ROOT=<GPT-SoVITS-v5-package>
+python code/test_lora_loader_guards.py
+python code/audit_lora_checkpoints.py
 ```
 
 但**不能**据此声称整个语音生成实验可独立复现：1,200 句语料、30/10 句评测文本、参考音频、V5 底模和 Checkpoint 都未公开。`eval_suite.py`、`bootstrap_eval.py` 和音频生成 harness 也没有放进仓库；仓库只保留统计脚本、CSV/JSON 和 Checkpoint 结构审计脚本。图 5 的 best-of-5 零分布是用固定随机种子模拟的（SD=0.0179），原始逐 seed 候选值没有保存，因此 P≈0.886 只能按该模拟复现，不能按原始数据重算。`last5/last5b` 权重已删除，无法复核。`all_suite_summary.csv` 同时含修复前和修复后结果；修复后的 ada8/all8 必须用 `data/loader_fix_summary.csv` 与 `data/loader_fix_paired_seed1.csv`，不能把两套数字混在一起。
@@ -948,14 +996,27 @@ python code/validate_paper.py
 
 ---
 
-## 13. 结论
+## 13. 讨论：负结果的价值与边界
 
-1. **标准 q/v/out LoRA** 在 1,200 句单说话人、6 GB、V5dev 上没有达到可用、稳定的增益；`vo16_s300` 3 seed 均值 −0.0004。
+1. **公开负结果能减少重复成本**。19 条路线里，rank 扫描、输出层、adaLN、FFN、外部参考、固定参考、自蒸馏、后五层、ref_enc、GPT s1、数据增强，各自消耗了训练和评测；这些配置和失败方式比“某方法无效”一句话更有用。
+2. **特定条件下的失败不等于方法普遍无效**。本文只有单说话人、1,200 句、6 GB、V5dev、turbo4 推理；没有多说话人、更多数据、更大模型或不同蒸馏设置。`all8` 的 +0.0010 也说明“完全为零”不是合适结论。
+3. **工程故障会制造错误的科学结论**。ada8 的五个 Checkpoint 指标完全相同，all8 的 FF 分支被忽略；如果不先修加载链路，就会把“适配器没加载”误写成“adaLN/FFN 无效”。这是本文最可复用的教训。
+4. **完整日志和 Checkpoint 是研究材料，不是临时文件**。`last5/last5b` 权重删除后只能写“无法复核”；原始音频没有保留，cut5 的时长、停顿、拼接和 SV 长度敏感性无法分离。
+5. **公开撤回是透明性的一部分**。best-of-5 的 +0.0127 被 max-of-k 零分布解释掉，撤回比保留一个漂亮数字更符合证据。
+6. **语音质量必须拆开评价**。SV 只测说话人嵌入，ASR 只测内容；amp48/CPP/HNR/jitter 是韵律和音质的代理，不能替代人耳。本文没有 ABX/盲测，所以“更像 Kan”只能说到指标层。
+7. **对同类 6 GB 环境的实际参考**：先做加载审计和零样本基线；不要用单一 loss 选 Checkpoint；小数据上优先控制参考条件和推理参数，而不是盲目加 rank；任何跨 seed 结论都要先定义样本单位。
+
+---
+
+## 14. 结论
+
+1. **标准 q/v/out LoRA** 在 1,200 句单说话人、6 GB、V5dev 上没有达到可用、稳定的增益；`vo16_s300` 3 seed 均值 −0.0004（p=.534）。
 2. **refenc** 是最强的反例：Loss 下降，SV/ASR 同时下降；方向与“优化目标与音色目标不一致”一致，但机制仍是假设。
-3. **turbo8** 有 +0.0052 SV（p=.013）的小增益；**cut5** 在 3 个配对 seed 上 +0.0244 SV（p=.011），但 test 复用、时长混杂、cut0 缺 seed4/5；两者都不是微调。
-4. **best-of-5** 是 max-of-k 选择偏差，已撤回。
-5. **ada8/all8/last5** 受推理加载缺陷影响：ada8 修复后 test +0.0002、ASR −0.008；all8 修复后 test +0.0010（p=.0084，只有 seed1，效应量 0.001，探索性）；last5 权重缺失，无法重测。
-6. 最诚实的总结是：**我们还没有证明微调能提升音色；我们记录了哪些路线没有观察到增益，哪些问题来自工程缺陷，哪些实验仍需重做。**
+3. **turbo8** 有 +0.0052 SV（配对 t p=.013；符号检验 p=.0625）的小增益；**cut5** 在 3 个配对 seed 上 +0.0244 SV（配对 t p=.011；Wilcoxon/符号检验 p=.25），但 test 复用、时长混杂、cut0 缺 seed4/5；两者都不是微调。
+4. **best-of-5** 是 max-of-k 选择偏差，已撤回，不是有效结果。
+5. **ada8/all8/last5** 受推理加载缺陷影响：ada8 修复后 test +0.0002、ASR −0.008；all8 修复后 test +0.0010（p=.0084，Wilcoxon .0081，符号 .043，只有 seed1，效应量 0.001，探索性）；last5 权重缺失，无法重测。
+6. **加载器**：5 个 Checkpoint 的 330 个目标模块逐模块符合 `(α/r)BA`，最大绝对误差 1.87×10⁻⁷；未修改层变化为 0；`last5/last5b` 不在其中。
+7. 最诚实的总结是：**我们还没有证明微调能提升音色；我们记录了哪些路线没有观察到增益，哪些问题来自工程缺陷，哪些实验仍需重做。**
 
 ---
 
@@ -964,8 +1025,9 @@ python code/validate_paper.py
 - GPT-SoVITS 官方仓库：<https://github.com/RVC-Boss/GPT-SoVITS>；V5 本地包 `GPT-SoVITS-v5-20261006`。
 - Hu et al., *LoRA: Low-Rank Adaptation of Large Language Models*, ICLR 2022.
 - Radford et al., *Robust Speech Recognition via Large-Scale Weak Supervision* (Whisper), 2022.
-- ERes2NetV2 说话人验证模型，GPT-SoVITS 生态内随包提供；本文仅作为 SV 度量。
-- VITS / HiFi-GAN / CFM 相关实现以本地 V5 代码为准。
+- ERes2NetV2 说话人验证模型，GPT-SoVITS 生态内随包提供；本文仅作为 SV 度量。具体论文出处与权重版本**待核实**，不把随包模型当成我们训练的模型。
+- VITS / HiFi-GAN / CFM / DiT 的通用理论不在本文展开；本文的模块描述以本地 V5 代码为准，通用文献引用待补。
+- 语音素材来自本地个人实验，未公开、未再分发；角色名仅用于说明实验对象。仓库不含音频、角色语音或模型权重。
 
 ---
 
@@ -1028,31 +1090,33 @@ python code/validate_paper.py
 
 ## 附录 D：19 条路线的统一失败记录
 
-完整字段（含配置）在 `data/route_ledger.csv`；下表是同一份记录的压缩索引，避免正文重复。
+完整字段（含配置、训练过程、未排除解释、分类）在 `data/route_ledger.csv`；下表是同一份记录的压缩索引，避免正文重复。
 
-| 路线 | 动机 | 观察 | 异常/排查 | 可信度 | 建议 |
+| 路线 | 分类 | 观察 | 异常/排查 | 可信度 | 建议 |
 |---|---|---|---|---|---|
-| r4 | 容量最小改动 | val 与基线差在0.001内；无完整30句test | Loss末点上升；未单独排查 | 中 | 容量不是主要瓶颈；不要用r4判断音色上限 |
-| r8 | 中间容量 | val s400 +0.0002；无30句test | 无异常 | 中 | rank提高没有带来可见收益 |
-| r16 | 更大容量 | val s300 +0.001量级；30句test未复现 | 无异常 | 中 | 继续加rank收益递减 |
-| r32 | 最大rank | val 0.8947；无30句test | Loss尖峰；未见崩溃 | 中 | 容量不是瓶颈；大rank更易过拟合 |
-| clean16 | 去噪/短句 | val s700 +0.0012；test s700 -0.0010 | s700峰值未泛化 | 中 | 清洗降低毛刺但不改音色瓶颈 |
-| out4 | 只改输出投影 | val 0.8935-0.8939；无30句test | 无异常 | 低到中 | 输出层容量太小；不能据此否定所有LoRA |
-| ada8 | 条件调制 | 修复前五Checkpoint完全相同；修复后test +0.0002 / ASR -0.008 | loader硬编码q/k/v/out；已修复并重测seed1 | 低到中 | 先审计加载再解释结果；单seed不算稳定 |
-| all8 | 最大LoRA覆盖 | 修复前FF被忽略；修复后test +0.0010 p=.0084 / ASR +0.003 | loader缺陷；修复后seed1重测；无多seed | 探索性 | 统计小效应不等于可用；需多seed与时长控制 |
-| qv16b | 官方风格q/v | val s400 0.8940 低于v5dev 0.8945 | 无异常 | 中 | 官方配方不保证在单说话人小数据上更好 |
-| pair16 | 外部参考配对 | test 0.8822/0.8755 vs 0.8818/0.8764 | 外部参考域不匹配；未单独消融 | 中 | 参考条件改动没有稳定收益 |
-| fixed16 | 固定参考 | test 0.8823 vs 0.8818 | 自动resume旧权重；删logs重跑 | 中 | 固定参考结果接近噪声 |
-| syn | 自蒸馏扩数据 | val s869 0.8823 vs 0.8935；无可核对30句test | 无完整test记录 | 低 | 不要把val下降当成test结论 |
-| last5 | 后五层全参 | val 0.8940与基线同；权重已删除 | 权重删除；全参加载未复核 | 无法验证 | 不要推断真实表现；需要权重或重训 |
-| last5b | 后五层全参高lr | val s600 0.8933 / s1200 0.8916；权重已删除 | 权重删除；加载未复核 | 无法验证 | 不要推断真实表现；不要为补表重训 |
-| refenc | 直接改音色锚点 | val s1200 0.8825 / ASR .8679；句子崩 | 移除g.detach与refer_spec补丁；加载相对可信 | 高（现象）/假设（机制） | 条件侧改动会同时伤SV/ASR；机制仍需对照 |
-| s1 | 语义/韵律侧 | test SV .8701 vs .8818 / ASR .9314 vs .9080 | 无听感盲测 | 中 | 音色不只在CFM；s1改动会伤SV |
-| aug16 | 数据增强 | val s800后持续退步；test .8799 | 无异常 | 中 | 重复文本不等于新信息；早停 |
-| wns4 | 条件融合 | val s600 +.0011 但ASR .9395 vs .9469；12句test .8881 vs .8901 | 12句test非30句 | 低到中 | SV小升以咬字为代价；需30句复测 |
-| full-data LoRA | 全量数据更久训练 | 12句test .8696 vs .8684 / ASR .8886 vs .8861 | 完整配置未记录；不是全参 | 低 | 文件名full指数据不是参数；不能当全参证据 |
+| r4 | D | val 与基线差在0.001内；无完整30句test | Loss末点上升；未单独排查 | 中 | 容量不是主要瓶颈；不要用r4判断音色上限 |
+| r8 | D | val s400 +0.0002；无30句test | 无异常 | 中 | rank提高没有带来可见收益 |
+| r16 | D | val s300 +0.001量级；30句test未复现 | 无异常 | 中 | 继续加rank收益递减 |
+| r32 | D | val 0.8947；无30句test | Loss尖峰；未见崩溃 | 中 | 容量不是瓶颈；大rank更易过拟合 |
+| clean16 | A,D | val s700 +0.0012；test s700 -0.0010 | s700峰值未泛化 | 中 | 清洗降低毛刺但不改音色瓶颈 |
+| out4 | D | val 0.8935-0.8939；无30句test | 无异常 | 低到中 | 输出层容量太小；不能据此否定所有LoRA |
+| ada8 | A,C,D | 修复前五Checkpoint完全相同；修复后test +0.0002 / ASR -0.008 | loader硬编码q/k/v/out；已修复并重测seed1 | 低到中 | 先审计加载再解释结果；单seed不算稳定 |
+| all8 | B,C,D | 修复前FF被忽略；修复后test +0.0010 p=.0084 / ASR +0.003 | loader缺陷；修复后seed1重测；无多seed | 探索性 | 统计小效应不等于可用；需多seed与时长控制 |
+| qv16b | D | val s400 0.8940 低于v5dev 0.8945 | 无异常 | 中 | 官方配方不保证在单说话人小数据上更好 |
+| pair16 | A,D | test 0.8822/0.8755 vs 0.8818/0.8764 | 外部参考域不匹配；未单独消融 | 中 | 参考条件改动没有稳定收益 |
+| fixed16 | A,C,D | test 0.8823 vs 0.8818 | 自动resume旧权重；删logs重跑 | 中 | 固定参考结果接近噪声 |
+| syn | D | val s869 0.8823 vs 0.8935；无可核对30句test | 无完整test记录 | 低 | 不要把val下降当成test结论 |
+| last5 | E | val 0.8940与基线同；权重已删除 | 权重删除；混合加载未复核 | 无法验证 | 不要推断真实表现；需要权重或重训 |
+| last5b | E | val s600 0.8933 / s1200 0.8916；权重已删除 | 权重删除；加载未复核 | 无法验证 | 不要推断真实表现；不要为补表重训 |
+| refenc | D | val s1200 0.8825 / ASR .8679；句子崩 | 移除g.detach与refer_spec补丁；加载相对可信 | 高（现象）/假设（机制） | 条件侧改动会同时伤SV/ASR；机制仍需对照 |
+| s1 | A,D | test SV .8701 vs .8818 / ASR .9314 vs .9080 | 无听感盲测 | 中 | 音色不只在CFM；s1改动会伤SV |
+| aug16 | A,D | val s800后持续退步；test .8799 | 无异常 | 中 | 重复文本不等于新信息；早停 |
+| wns4 | D | val s600 +.0011 但ASR .9395 vs .9469；12句test .8881 vs .8901 | 12句test非30句 | 低到中 | SV小升以咬字为代价；需30句复测 |
+| full-data LoRA | A,D | 12句test .8696 vs .8684 / ASR .8886 vs .8861 | 完整配置未记录；不是全参 | 低 | 文件名full指数据不是参数；不能当全参证据 |
 
 注：`last5`/`last5b` 的“无法验证”不是“无效”；`all8` 的 seed1 小效应也不等于可用增益。
+
+分类代码：A=有效负结果，B=微小正向结果，C=工程故障，D=数据不足，E=不可复核，F=结论撤回；同一路线可有多个标签。`last5/last5b` 是 C+E；`all8` 是 B+C+D（C 指修复前的 FF 漏载，已修复）；`ada8` 是 A+C+D（C 指修复前的 attn_norm 漏载）。**F 只用于 best-of-5**，它不是 19 条微调路线之一，单独记录在 `data/retracted_claims.csv`，避免把“撤回”混进路线负结果。
 
 ## 附录 E：术语
 
@@ -1063,3 +1127,12 @@ python code/validate_paper.py
 - **adaLN**：Adaptive Layer Normalization，自适应层归一化；
 - **VQ**：Vector Quantization，向量量化；
 - **max-of-k**：从 k 个候选取最大，天然产生选择偏差。
+
+## 附录 F：版本、撤回与可追踪记录
+
+| 版本/项 | 日期 | 变更 | 影响 | 证据 |
+|---|---|---|---|---|
+| v2.0 | 2026-11-20 | 初稿与主要表格 | 部分标签过强 | 历史提交 |
+| v2.1 | 2026-11-20 | 修正 full-data LoRA 标签、all8 统计、成本措辞、加载器校验 | 删除错误断言 | 提交 `e0fd21b` |
+| v2.2 | 2026-11-20 | 逐模块合并验证、敏感性检验、路线 A–F 分类、证据矩阵、结果索引 | 证据边界更清楚 | 本提交；数据见 `data/lora_merge_*`、`data/evidence_matrix.csv` |
+| BEST5 | 2026-11-20 | 撤回 best-of-5 SV 增益 | 不再作为有效结果 | `data/retracted_claims.csv`；图 5 |

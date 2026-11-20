@@ -1,0 +1,2 @@
+claim_id,claim,status,reason,evidence,paper_section
+BEST5,best-of-5 SV +0.0127,retracted,max-of-k selection bias; null expectation +0.0166,simulation in figures/fig5_selection_bias.png; caveat in data/README.md,8.2

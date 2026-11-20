@@ -12,7 +12,12 @@ These CSVs/JSONs are **derived summaries**, not raw audio or model weights.
 | `loader_fix_summary.csv` | 10 | corrected-loader ada8/all8 + v5dev, val and 30-sentence test, seed1 |
 | `loader_fix_paired_seed1.csv` | 90 | sentence-level corrected-loader rows for the same three tags (30 sentences × 3) |
 | `lora_checkpoint_audit.csv` | 19 | offline structural audit; `syn` has no checkpoint, `last5/last5b` are `DELETED_UNVERIFIABLE` |
-| `route_ledger.csv` | 19 | unified failure ledger: motivation, config, observation, anomaly/investigation, confidence, advice |
+| `lora_merge_verification.csv` | 5 | per-checkpoint summary of actual vs `(alpha/r) B @ A`; max/mean/relative error, finite, untouched-layer delta |
+| `lora_merge_module_audit.csv` | 330 | one row per verified target module across r16/ada8/all8/refenc/full |
+| `evidence_matrix.csv` | 19 | route × evidence-type matrix: training log, config, checkpoint, runtime load, val, test, seeds, statistics, human listening; `structural` means checkpoint structure audit only, not model-level load verification |
+| `result_index.csv` | 15 | key result → data file → script → paper section → caveat |
+| `route_ledger.csv` | 19 | unified failure ledger: motivation, config, observation, anomaly/investigation, confidence, advice, result_class, class_note, train_process, unresolved |
+| `retracted_claims.csv` | 1 | explicitly retracted claim (`BEST5`); F class is not a fine-tune route |
 | `train_runs.json` | 24 runs | parsed training logs, including loss points and checkpoints |
 | `train_runs_compact.json` | loss-bearing runs | compact version used by the loss figure |
 
@@ -22,6 +27,11 @@ These CSVs/JSONs are **derived summaries**, not raw audio or model weights.
 - The loss figure can be regenerated from `train_runs_compact.json`.
 - Checkpoint target/rank/merge-delta audits can be regenerated if the local V5
   package and checkpoints are available (`GPT_SOVITS_ROOT`).
+- `lora_merge_verification.csv` and `lora_merge_module_audit.csv` are actual
+  model-level checks; they require the local V5 tree and checkpoints, and are not
+  reproducible from the public CSVs alone.
+- `result_index.csv` maps each headline result to its source file and script; it
+  is a navigation aid, not a substitute for the raw audio.
 
 ## What cannot be reproduced
 

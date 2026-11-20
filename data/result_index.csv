@@ -1,0 +1,16 @@
+result_id,claim,data_files,script,seeds,metric,paper_section,caveat
+R01,vo16_s300 vs v5dev 在 3 个 seed 上没有稳定增益,data/finetune_retest_summary.csv,code/stats_finetune_retest.py,3,ERes2NetV2 SV; paired t,5.1; 8.1; 8.8,只有 3 seed；无完整多 seed 30 句 test
+R02,rank 4–32 的 val 在 0.894–0.895 平台,data/all_suite_summary.csv,code/print_suites.py,1,val SV,5.1; 6.1,val 单 seed；不能当 test 泛化
+R03,cut5 3-seed 配对 SV +0.0244,data/cut5_seed_summary.csv;data/cut5_paired_seed1.csv,code/stats_cut5.py;code/stats_sensitivity.py,3 paired / 5 self,ERes2NetV2 SV; paired t; bootstrap,7.3; 8.6; 8.7,test 复用；时长/拼接混杂；cut0 缺 seed4/5
+R04,turbo8 vs turbo4 5-seed SV +0.0052,data/turbo8_seed_deltas.csv,code/stats_sensitivity.py,5,ERes2NetV2 SV; paired t; sign test,7.1; 8.4,ASR 不显著；test 复用；无盲测
+R05,all8 seed1 test SV +0.0010,data/loader_fix_paired_seed1.csv;data/loader_fix_summary.csv,code/validate_paper.py;code/stats_sensitivity.py,1,sentence-level paired t; Wilcoxon; sign; bootstrap,5.5; 8.1; 8.4; 9.3,只有 seed1；效应量 0.001；多重比较后不稳健
+R06,ada8 seed1 test SV +0.00018 / ASR −0.0088,data/loader_fix_paired_seed1.csv;data/loader_fix_summary.csv,code/validate_paper.py,1,sentence-level paired t,5.4; 8.1; 9.3,只有 seed1；没有可用增益
+R07,refenc val SV/ASR 同时下降,data/all_suite_summary.csv,code/print_suites.py,1,val SV/ASR,5.10; 8.8; 10.5,单 seed val；机制未单独验证
+R08,full-data rank32 LoRA 12 句 test 差异噪声级,data/all_suite_summary.csv,code/print_test_suites.py,2 (12 sentences),ERes2NetV2 SV; ASR,5.13; 6.1,配置不完整；12 句不是 30 句；不是全参
+R09,last5/last5b 无法复核,data/all_suite_summary.csv;data/evidence_matrix.csv,code/print_suites.py,1,val SV; ASR,5.9; 8.8; 附录 A,权重删除；加载路径未验证
+R10,best-of-5 已撤回,figures/fig5_selection_bias.png,code/make_figures.py,1,simulated max-of-k null,8.2,原始逐 seed 候选值未保存；P≈.886 为模拟
+R11,LoRA 合并公式逐模块匹配,data/lora_merge_verification.csv;data/lora_merge_module_audit.csv,code/test_lora_loader_guards.py,5 checkpoints,ΔW vs (α/r)BA; max/mean/relative error,9.2; 12.3,已验证 5 个 Checkpoint；last5 无权重
+R12,19 条路线证据与分类,data/route_ledger.csv;data/evidence_matrix.csv,code/validate_paper.py,,qualitative; evidence matrix,附录 A/D,部分路线缺 test、seed、人耳
+R13,MDE 是设计灵敏度而非观察门槛,data/cut5_paired_seed1.csv;data/loader_fix_paired_seed1.csv,code/validate_paper.py,30 sentences,2.8*SD/sqrt(n),8.1; 8.8,假设配对差近似正态/独立；无多重比较
+R14,syn 只有 val 且无 Checkpoint,data/all_suite_summary.csv;data/lora_checkpoint_audit.csv,code/print_suites.py;code/audit_lora_checkpoints.py,1,val SV,5.8; 附录 D,无 30 句 test；无 Checkpoint
+R15,s1 GPT 全参 test SV 降/ASR 升,data/all_suite_summary.csv,code/print_test_suites.py,1,test SV; ASR,5.11; 14,无 val；无盲测；不能外推
