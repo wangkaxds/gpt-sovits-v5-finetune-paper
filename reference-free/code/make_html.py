@@ -35,7 +35,7 @@ hr { border: none; border-top: 1px solid #ddd; margin: 18px 0; }
 """
 html = f"""<!doctype html>
 <html lang="zh"><head><meta charset="utf-8">
-<title>GPT-SoVITS V5 的严格无参考单说话人推理：条件通路审计与系统性负结果</title>
+<title>GPT-SoVITS V5 的严格无参考单说话人推理：实现边界、条件通路审计与负结果</title>
 <style>{css}</style></head><body>
 {body}
 </body></html>"""

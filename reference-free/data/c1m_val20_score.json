@@ -1,0 +1,629 @@
+{
+  "n": 20,
+  "cer_mean": 0.35227215058966277,
+  "sv_mean": 0.7909323245286941,
+  "sv_min": 0.5912256836891174,
+  "empty": 0,
+  "rows": [
+    {
+      "index": 1,
+      "text": "髪めっちゃきれー……染めてこうなの？",
+      "speaker": "kan",
+      "out": "s01.wav",
+      "sample_rate": 48000,
+      "samples": 167040,
+      "duration_sec": 3.48,
+      "ref_free": true,
+      "mastered": {
+        "mode": "C1_lowcut_plus_high_shelf",
+        "fir_taps": 2049,
+        "target_rms": 0.1228,
+        "peak_ceil": 0.98,
+        "high_shelf": {
+          "hz": 2000.0,
+          "db": 0.75
+        },
+        "compressor": {
+          "threshold_db": -10.0,
+          "ratio": 1.5,
+          "attack_ms": 5.0,
+          "release_ms": 100.0,
+          "knee_db": 4.0
+        },
+        "gain": 1.6910772977952193
+      },
+      "hyp": "髪めっちゃ綺麗!染めてこうなの?",
+      "cer": 0.2,
+      "sv_cos": 0.867647647857666
+    },
+    {
+      "index": 2,
+      "text": "そ。日和山温泉って温泉街が一つの大きなお宿って扱いなの",
+      "speaker": "kan",
+      "out": "s02.wav",
+      "sample_rate": 48000,
+      "samples": 295680,
+      "duration_sec": 6.16,
+      "ref_free": true,
+      "mastered": {
+        "mode": "C1_lowcut_plus_high_shelf",
+        "fir_taps": 2049,
+        "target_rms": 0.1228,
+        "peak_ceil": 0.98,
+        "high_shelf": {
+          "hz": 2000.0,
+          "db": 0.75
+        },
+        "compressor": {
+          "threshold_db": -10.0,
+          "ratio": 1.5,
+          "attack_ms": 5.0,
+          "release_ms": 100.0,
+          "knee_db": 4.0
+        },
+        "gain": 1.9501687281872002
+      },
+      "hyp": "そう、塩り山温泉って温泉街が一つの大きなを宿って扱いなの",
+      "cer": 0.15384615384615385,
+      "sv_cos": 0.7121669054031372
+    },
+    {
+      "index": 3,
+      "text": "ひえー……あざサマめっちゃ肌きれー……",
+      "speaker": "kan",
+      "out": "s03.wav",
+      "sample_rate": 48000,
+      "samples": 249600,
+      "duration_sec": 5.2,
+      "ref_free": true,
+      "mastered": {
+        "mode": "C1_lowcut_plus_high_shelf",
+        "fir_taps": 2049,
+        "target_rms": 0.1228,
+        "peak_ceil": 0.98,
+        "high_shelf": {
+          "hz": 2000.0,
+          "db": 0.75
+        },
+        "compressor": {
+          "threshold_db": -10.0,
+          "ratio": 1.5,
+          "attack_ms": 5.0,
+          "release_ms": 100.0,
+          "knee_db": 4.0
+        },
+        "gain": 1.3758798336325433
+      },
+      "hyp": "りーえ? アザ様、めっちゃ肌切る",
+      "cer": 0.6,
+      "sv_cos": 0.798950731754303
+    },
+    {
+      "index": 4,
+      "text": "おねーちゃんが御所院学園に通ってたし、あたしも絶対、入りたかったから！",
+      "speaker": "kan",
+      "out": "s04.wav",
+      "sample_rate": 48000,
+      "samples": 280320,
+      "duration_sec": 5.84,
+      "ref_free": true,
+      "mastered": {
+        "mode": "C1_lowcut_plus_high_shelf",
+        "fir_taps": 2049,
+        "target_rms": 0.1228,
+        "peak_ceil": 0.98,
+        "high_shelf": {
+          "hz": 2000.0,
+          "db": 0.75
+        },
+        "compressor": {
+          "threshold_db": -10.0,
+          "ratio": 1.5,
+          "attack_ms": 5.0,
+          "release_ms": 100.0,
+          "knee_db": 4.0
+        },
+        "gain": 1.4055627680664344
+      },
+      "hyp": "と姉ちゃんがご所員学園に通ってたし、私も絶対入りたかったから!",
+      "cer": 0.25,
+      "sv_cos": 0.8495581150054932
+    },
+    {
+      "index": 5,
+      "text": "うん、なんかヒダヒダがかっこよくならないんだよねー",
+      "speaker": "kan",
+      "out": "s05.wav",
+      "sample_rate": 48000,
+      "samples": 180480,
+      "duration_sec": 3.76,
+      "ref_free": true,
+      "mastered": {
+        "mode": "C1_lowcut_plus_high_shelf",
+        "fir_taps": 2049,
+        "target_rms": 0.1228,
+        "peak_ceil": 0.98,
+        "high_shelf": {
+          "hz": 2000.0,
+          "db": 0.75
+        },
+        "compressor": {
+          "threshold_db": -10.0,
+          "ratio": 1.5,
+          "attack_ms": 5.0,
+          "release_ms": 100.0,
+          "knee_db": 4.0
+        },
+        "gain": 1.4830425597611525
+      },
+      "hyp": "うん、なんかひだひだがかっこよくならないんだよね",
+      "cer": 0.20833333333333334,
+      "sv_cos": 0.8015027046203613
+    },
+    {
+      "index": 6,
+      "text": "ＡＺの投稿でちょっと言われててねー",
+      "speaker": "kan",
+      "out": "s06.wav",
+      "sample_rate": 48000,
+      "samples": 163200,
+      "duration_sec": 3.4,
+      "ref_free": true,
+      "mastered": {
+        "mode": "C1_lowcut_plus_high_shelf",
+        "fir_taps": 2049,
+        "target_rms": 0.1228,
+        "peak_ceil": 0.98,
+        "high_shelf": {
+          "hz": 2000.0,
+          "db": 0.75
+        },
+        "compressor": {
+          "threshold_db": -10.0,
+          "ratio": 1.5,
+          "attack_ms": 5.0,
+          "release_ms": 100.0,
+          "knee_db": 4.0
+        },
+        "gain": 1.9104353172365833
+      },
+      "hyp": "エイジの投稿でちょっと言われててね",
+      "cer": 0.23529411764705882,
+      "sv_cos": 0.7827125191688538
+    },
+    {
+      "index": 7,
+      "text": "あっ、知ってるー♪　めっちゃきれいなトコだよね！",
+      "speaker": "kan",
+      "out": "s07.wav",
+      "sample_rate": 48000,
+      "samples": 226560,
+      "duration_sec": 4.72,
+      "ref_free": true,
+      "mastered": {
+        "mode": "C1_lowcut_plus_high_shelf",
+        "fir_taps": 2049,
+        "target_rms": 0.1228,
+        "peak_ceil": 0.98,
+        "high_shelf": {
+          "hz": 2000.0,
+          "db": 0.75
+        },
+        "compressor": {
+          "threshold_db": -10.0,
+          "ratio": 1.5,
+          "attack_ms": 5.0,
+          "release_ms": 100.0,
+          "knee_db": 4.0
+        },
+        "gain": 1.0112641322019238
+      },
+      "hyp": "あ、知ってる!めっちゃ綺麗なとこだよね!",
+      "cer": 0.38095238095238093,
+      "sv_cos": 0.8869737386703491
+    },
+    {
+      "index": 8,
+      "text": "んん～～～っ、じゃ、ちゃんと着替えてきまーす",
+      "speaker": "kan",
+      "out": "s08.wav",
+      "sample_rate": 48000,
+      "samples": 297600,
+      "duration_sec": 6.2,
+      "ref_free": true,
+      "mastered": {
+        "mode": "C1_lowcut_plus_high_shelf",
+        "fir_taps": 2049,
+        "target_rms": 0.1228,
+        "peak_ceil": 0.98,
+        "high_shelf": {
+          "hz": 2000.0,
+          "db": 0.75
+        },
+        "compressor": {
+          "threshold_db": -10.0,
+          "ratio": 1.5,
+          "attack_ms": 5.0,
+          "release_ms": 100.0,
+          "knee_db": 4.0
+        },
+        "gain": 1.4964575315926036
+      },
+      "hyp": "うーんじゃあちゃんと着替えてきまーす",
+      "cer": 0.35,
+      "sv_cos": 0.8383288383483887
+    },
+    {
+      "index": 9,
+      "text": "そそ、先輩と後輩って感じ、出てるっしょ？",
+      "speaker": "kan",
+      "out": "s09.wav",
+      "sample_rate": 48000,
+      "samples": 165120,
+      "duration_sec": 3.44,
+      "ref_free": true,
+      "mastered": {
+        "mode": "C1_lowcut_plus_high_shelf",
+        "fir_taps": 2049,
+        "target_rms": 0.1228,
+        "peak_ceil": 0.98,
+        "high_shelf": {
+          "hz": 2000.0,
+          "db": 0.75
+        },
+        "compressor": {
+          "threshold_db": -10.0,
+          "ratio": 1.5,
+          "attack_ms": 5.0,
+          "release_ms": 100.0,
+          "knee_db": 4.0
+        },
+        "gain": 2.0887293158338207
+      },
+      "hyp": "そうそう、先輩と後輩って感じ出てるでしょ",
+      "cer": 0.17647058823529413,
+      "sv_cos": 0.7148826122283936
+    },
+    {
+      "index": 10,
+      "text": "言われなきゃ、わかんないよ！！",
+      "speaker": "kan",
+      "out": "s10.wav",
+      "sample_rate": 48000,
+      "samples": 153600,
+      "duration_sec": 3.2,
+      "ref_free": true,
+      "mastered": {
+        "mode": "C1_lowcut_plus_high_shelf",
+        "fir_taps": 2049,
+        "target_rms": 0.1228,
+        "peak_ceil": 0.98,
+        "high_shelf": {
+          "hz": 2000.0,
+          "db": 0.75
+        },
+        "compressor": {
+          "threshold_db": -10.0,
+          "ratio": 1.5,
+          "attack_ms": 5.0,
+          "release_ms": 100.0,
+          "knee_db": 4.0
+        },
+        "gain": 1.1922809913911436
+      },
+      "hyp": "ああ、言われなきゃわかんないよ",
+      "cer": 0.16666666666666666,
+      "sv_cos": 0.8641880750656128
+    },
+    {
+      "index": 11,
+      "text": "あっ、次は、おねーちゃんと歌うから、曲選んでおいてねー♪",
+      "speaker": "kan",
+      "out": "s11.wav",
+      "sample_rate": 48000,
+      "samples": 226560,
+      "duration_sec": 4.72,
+      "ref_free": true,
+      "mastered": {
+        "mode": "C1_lowcut_plus_high_shelf",
+        "fir_taps": 2049,
+        "target_rms": 0.1228,
+        "peak_ceil": 0.98,
+        "high_shelf": {
+          "hz": 2000.0,
+          "db": 0.75
+        },
+        "compressor": {
+          "threshold_db": -10.0,
+          "ratio": 1.5,
+          "attack_ms": 5.0,
+          "release_ms": 100.0,
+          "knee_db": 4.0
+        },
+        "gain": 1.5803730182894533
+      },
+      "hyp": "次はお姉ちゃんと歌うから曲選んでおいてね",
+      "cer": 0.24,
+      "sv_cos": 0.8229752779006958
+    },
+    {
+      "index": 12,
+      "text": "んくんくんくっ♪ぷはぁ～～～っ、美味しい！！",
+      "speaker": "kan",
+      "out": "s12.wav",
+      "sample_rate": 48000,
+      "samples": 224640,
+      "duration_sec": 4.68,
+      "ref_free": true,
+      "mastered": {
+        "mode": "C1_lowcut_plus_high_shelf",
+        "fir_taps": 2049,
+        "target_rms": 0.1228,
+        "peak_ceil": 0.98,
+        "high_shelf": {
+          "hz": 2000.0,
+          "db": 0.75
+        },
+        "compressor": {
+          "threshold_db": -10.0,
+          "ratio": 1.5,
+          "attack_ms": 5.0,
+          "release_ms": 100.0,
+          "knee_db": 4.0
+        },
+        "gain": 2.7790486579782407
+      },
+      "hyp": "うーん…",
+      "cer": 0.9473684210526315,
+      "sv_cos": 0.6295252442359924
+    },
+    {
+      "index": 13,
+      "text": "はぁ、はぁ……はぁ",
+      "speaker": "kan",
+      "out": "s13.wav",
+      "sample_rate": 48000,
+      "samples": 136320,
+      "duration_sec": 2.84,
+      "ref_free": true,
+      "mastered": {
+        "mode": "C1_lowcut_plus_high_shelf",
+        "fir_taps": 2049,
+        "target_rms": 0.1228,
+        "peak_ceil": 0.98,
+        "high_shelf": {
+          "hz": 2000.0,
+          "db": 0.75
+        },
+        "compressor": {
+          "threshold_db": -10.0,
+          "ratio": 1.5,
+          "attack_ms": 5.0,
+          "release_ms": 100.0,
+          "knee_db": 4.0
+        },
+        "gain": 2.6931807177964315
+      },
+      "hyp": "はぁはぁはぁはぁ",
+      "cer": 0.3333333333333333,
+      "sv_cos": 0.5912256836891174
+    },
+    {
+      "index": 14,
+      "text": "そ、そんなことないけど……センパイだって修学旅行の準備とかあるから",
+      "speaker": "kan",
+      "out": "s14.wav",
+      "sample_rate": 48000,
+      "samples": 299520,
+      "duration_sec": 6.24,
+      "ref_free": true,
+      "mastered": {
+        "mode": "C1_lowcut_plus_high_shelf",
+        "fir_taps": 2049,
+        "target_rms": 0.1228,
+        "peak_ceil": 0.98,
+        "high_shelf": {
+          "hz": 2000.0,
+          "db": 0.75
+        },
+        "compressor": {
+          "threshold_db": -10.0,
+          "ratio": 1.5,
+          "attack_ms": 5.0,
+          "release_ms": 100.0,
+          "knee_db": 4.0
+        },
+        "gain": 1.5948923314599368
+      },
+      "hyp": "そ、そんなことないけど、先輩だって就学旅行の準備とかあるから",
+      "cer": 0.16666666666666666,
+      "sv_cos": 0.7370050549507141
+    },
+    {
+      "index": 15,
+      "text": "あちち……唐揚げもフライドポテトも揚げたてがめっちゃ美味しーよねぇ",
+      "speaker": "kan",
+      "out": "s15.wav",
+      "sample_rate": 48000,
+      "samples": 280320,
+      "duration_sec": 5.84,
+      "ref_free": true,
+      "mastered": {
+        "mode": "C1_lowcut_plus_high_shelf",
+        "fir_taps": 2049,
+        "target_rms": 0.1228,
+        "peak_ceil": 0.98,
+        "high_shelf": {
+          "hz": 2000.0,
+          "db": 0.75
+        },
+        "compressor": {
+          "threshold_db": -10.0,
+          "ratio": 1.5,
+          "attack_ms": 5.0,
+          "release_ms": 100.0,
+          "knee_db": 4.0
+        },
+        "gain": 1.5593400072092074
+      },
+      "hyp": "あっちち、カラー揚げもフライドポテトも揚げたてがめっちゃ美味しいよねー",
+      "cer": 0.1935483870967742,
+      "sv_cos": 0.7973586320877075
+    },
+    {
+      "index": 16,
+      "text": "そうそう、こーゆーのは、噛み応えがあっていいんだよねぇ",
+      "speaker": "kan",
+      "out": "s16.wav",
+      "sample_rate": 48000,
+      "samples": 216960,
+      "duration_sec": 4.52,
+      "ref_free": true,
+      "mastered": {
+        "mode": "C1_lowcut_plus_high_shelf",
+        "fir_taps": 2049,
+        "target_rms": 0.1228,
+        "peak_ceil": 0.98,
+        "high_shelf": {
+          "hz": 2000.0,
+          "db": 0.75
+        },
+        "compressor": {
+          "threshold_db": -10.0,
+          "ratio": 1.5,
+          "attack_ms": 5.0,
+          "release_ms": 100.0,
+          "knee_db": 4.0
+        },
+        "gain": 1.365969781000398
+      },
+      "hyp": "そうそう!こういうのは髪ごたえがあっていいんだよね!",
+      "cer": 0.28,
+      "sv_cos": 0.8882079124450684
+    },
+    {
+      "index": 17,
+      "text": "叶夢、叶夢、かぁ……あはは",
+      "speaker": "kan",
+      "out": "s17.wav",
+      "sample_rate": 48000,
+      "samples": 249600,
+      "duration_sec": 5.2,
+      "ref_free": true,
+      "mastered": {
+        "mode": "C1_lowcut_plus_high_shelf",
+        "fir_taps": 2049,
+        "target_rms": 0.1228,
+        "peak_ceil": 0.98,
+        "high_shelf": {
+          "hz": 2000.0,
+          "db": 0.75
+        },
+        "compressor": {
+          "threshold_db": -10.0,
+          "ratio": 1.5,
+          "attack_ms": 5.0,
+          "release_ms": 100.0,
+          "knee_db": 4.0
+        },
+        "gain": 2.071319554029425
+      },
+      "hyp": "この夢…この夢か…フフッ",
+      "cer": 0.8888888888888888,
+      "sv_cos": 0.7609694004058838
+    },
+    {
+      "index": 18,
+      "text": "あっ、その橋見たことあるー。いーなぁ、センパイと見たかったぁ",
+      "speaker": "kan",
+      "out": "s18.wav",
+      "sample_rate": 48000,
+      "samples": 337920,
+      "duration_sec": 7.04,
+      "ref_free": true,
+      "mastered": {
+        "mode": "C1_lowcut_plus_high_shelf",
+        "fir_taps": 2049,
+        "target_rms": 0.1228,
+        "peak_ceil": 0.98,
+        "high_shelf": {
+          "hz": 2000.0,
+          "db": 0.75
+        },
+        "compressor": {
+          "threshold_db": -10.0,
+          "ratio": 1.5,
+          "attack_ms": 5.0,
+          "release_ms": 100.0,
+          "knee_db": 4.0
+        },
+        "gain": 1.3107853379164798
+      },
+      "hyp": "あっ、その端見たことある。いいなぁ。先輩と見たこと。",
+      "cer": 0.4074074074074074,
+      "sv_cos": 0.8540334701538086
+    },
+    {
+      "index": 19,
+      "text": "そ、そっかあ……えへへ",
+      "speaker": "kan",
+      "out": "s19.wav",
+      "sample_rate": 48000,
+      "samples": 115200,
+      "duration_sec": 2.4,
+      "ref_free": true,
+      "mastered": {
+        "mode": "C1_lowcut_plus_high_shelf",
+        "fir_taps": 2049,
+        "target_rms": 0.1228,
+        "peak_ceil": 0.98,
+        "high_shelf": {
+          "hz": 2000.0,
+          "db": 0.75
+        },
+        "compressor": {
+          "threshold_db": -10.0,
+          "ratio": 1.5,
+          "attack_ms": 5.0,
+          "release_ms": 100.0,
+          "knee_db": 4.0
+        },
+        "gain": 1.6315390557060976
+      },
+      "hyp": "そ、そっかー",
+      "cer": 0.5,
+      "sv_cos": 0.8249247670173645
+    },
+    {
+      "index": 20,
+      "text": "もっち♪　センパイならあたしのことちょ～可愛く撮ってくれるし♪",
+      "speaker": "kan",
+      "out": "s20.wav",
+      "sample_rate": 48000,
+      "samples": 280320,
+      "duration_sec": 5.84,
+      "ref_free": true,
+      "mastered": {
+        "mode": "C1_lowcut_plus_high_shelf",
+        "fir_taps": 2049,
+        "target_rms": 0.1228,
+        "peak_ceil": 0.98,
+        "high_shelf": {
+          "hz": 2000.0,
+          "db": 0.75
+        },
+        "compressor": {
+          "threshold_db": -10.0,
+          "ratio": 1.5,
+          "attack_ms": 5.0,
+          "release_ms": 100.0,
+          "knee_db": 4.0
+        },
+        "gain": 1.4217977201989542
+      },
+      "hyp": "もっちー 先輩なら私のことちょう可愛くとってくれるし",
+      "cer": 0.36666666666666664,
+      "sv_cos": 0.7955091595649719
+    }
+  ]
+}

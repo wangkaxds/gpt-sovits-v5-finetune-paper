@@ -1,0 +1,7 @@
+# Inference / data-export extras. A GPT-SoVITS V5 package and checkpoint are
+# required separately; neither is published here.
+torch>=2.0
+torchaudio>=2.0
+soundfile>=0.12
+PyYAML>=6
+pandas>=2.0

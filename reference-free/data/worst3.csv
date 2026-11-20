@@ -1,0 +1,8 @@
+sentence,variant,cer,sv,reference
+09,asis,0.263,0.861,worst3_asis.txt
+09,norm,0.316,0.716,worst3_norm.txt
+03,asis,0.462,0.758,worst3_asis.txt
+03,norm,0.360,0.770,worst3_norm.txt
+01,asis,0.643,0.853,worst3_asis.txt
+01,norm,0.308,0.814,worst3_norm.txt
+01,fix,0.438,0.818,worst3_fix01.txt

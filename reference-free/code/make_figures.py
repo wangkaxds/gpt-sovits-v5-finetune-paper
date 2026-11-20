@@ -40,32 +40,35 @@ def arrow(ax, xy1, xy2, style="-|>", color="#344054"):
 
 
 def fig1_pipeline():
-    fig, ax = plt.subplots(figsize=(7.4, 3.3))
+    fig, ax = plt.subplots(figsize=(7.6, 3.7))
     ax.set_xlim(0, 10)
-    ax.set_ylim(0, 4.2)
+    ax.set_ylim(0, 4.6)
     ax.axis("off")
-    y = 2.55
+    y = 3.15
     boxes = [
-        (0.15, 1.1, 0.55, "Japanese\ntext"),
-        (1.5, 1.0, 0.6, "S1 AR\nGPT"),
-        (3.15, 1.1, 0.65, "semantic\ntokens"),
-        (4.45, 1.05, 0.7, "enc_p /\nquantizer"),
-        (5.9, 0.95, 0.75, "CFM DiT\n22 blocks"),
-        (7.35, 1.05, 0.65, "HiFi-GAN\n48 kHz"),
-        (8.75, 1.15, 0.6, "waveform"),
+        (0.15, 1.0, 0.55, "Japanese\ntext"),
+        (1.45, 0.95, 0.6, "S1 AR\nGPT"),
+        (3.0, 1.05, 0.62, "semantic\ntokens"),
+        (4.3, 1.35, 0.7, "S2: enc_p +\nwns1"),
+        (5.95, 0.9, 0.72, "CFM DiT\n22 blocks"),
+        (7.35, 1.0, 0.65, "HiFi-GAN\n48 kHz"),
+        (8.65, 1.1, 0.6, "waveform"),
     ]
     for x, w, h, t in boxes:
         box(ax, (x, y), w, h, t)
     for (x1, w1, _, _), (x2, _, _, _) in zip(boxes[:-1], boxes[1:]):
         arrow(ax, (x1 + w1, y + 0.3), (x2, y + 0.3))
-    # two ge sources, both below the chain, no overlap
-    box(ax, (0.15, 0.55), 3.0, 0.55, "reference audio → ref_enc → ge\n(disabled at inference)", fc="#fff4e5", fs=6.8)
-    arrow(ax, (3.15, 0.82), (5.9, y - 0.02), color="#b54708")
-    box(ax, (3.35, 0.55), 3.1, 0.55, "strict no-ref: ge = learned spk_emb\n(no audio, no cached feature)", fc="#e8f0ff", fs=6.8)
-    arrow(ax, (6.45, 0.82), (6.4, y - 0.02), color="#2f6fed")
-    ax.text(0.15, 4.0, "V5 inference chain", fontsize=9.5, weight="bold")
-    ax.text(0.15, 0.15, "Training variants: spk_emb, wns1, CFM LoRA, FiLM, additive mu, time embedding, enc_p. "
-                         "C1M is a static wrapper, not a speaker model.", fontsize=6.9, color="#475467")
+    # ge path: learned vector feeds both S2 consumers; ref_enc is fallback only.
+    box(ax, (3.75, 1.55), 2.55, 0.55, "ge = spk_emb\n(E2b: random-init residual)", fc="#e8f0ff", fs=6.8)
+    arrow(ax, (5.0, 2.10), (4.65, y - 0.02), color="#2f6fed")
+    arrow(ax, (5.15, 2.10), (5.0, y - 0.02), color="#2f6fed")
+    box(ax, (0.2, 1.55), 3.15, 0.55, "reference audio → ref_enc\nfallback only when ge is None", fc="#fff4e5", fs=6.6)
+    arrow(ax, (3.35, 1.82), (3.75, 1.82), style="<|-|>", color="#b54708")
+    box(ax, (6.95, 1.55), 2.6, 0.55, "CFM spk_film\nE2b: zero-init = identity", fc="#f2f4f7", fs=6.8)
+    arrow(ax, (6.95, 1.82), (6.3, y - 0.02), style="-|>", color="#667085")
+    ax.text(0.15, 4.35, "V5 inference chain and the two audited ge consumers", fontsize=9.0, weight="bold")
+    ax.text(0.15, 0.55, "The reference path is a fallback, not the strict no-ref path.  "
+                         "C1M is a static wrapper, not a speaker model.", fontsize=6.8, color="#475467")
     fig.tight_layout()
     fig.savefig(FIG / "fig1_pipeline.png", bbox_inches="tight")
     plt.close(fig)
@@ -74,7 +77,8 @@ def fig1_pipeline():
 def fig2_ladder():
     rows = read_csv("experiments.csv")
     keep = [r for r in rows if r["id"] not in {"E0", "E0b", "E2b-test50x3", "Ref-control", "Raw50",
-                                                "C1-50", "C1H-50", "C1M-50", "Shelf-B-50", "Open20"}]
+                                                "C1-50", "C1H-50", "C1M-50", "Shelf-B-50", "Open20",
+                                                "C1M-val20"}]
     labels = [r["id"] for r in keep]
     sv = [float(r["sv_mean"]) for r in keep]
     cer = [float(r["cer_mean"]) if r["cer_mean"] else np.nan for r in keep]
@@ -82,14 +86,14 @@ def fig2_ladder():
     fig, axes = plt.subplots(1, 2, figsize=(9.2, 3.6), gridspec_kw={"width_ratios": [1.35, 1]})
     ax = axes[0]
     ax.scatter(x, sv, s=28, c="#2f6fed", zorder=3)
-    ax.axhline(0.8128, color="#b54708", lw=0.9, ls="--", label="C1M-50 (n=50)")
-    ax.axhline(0.8063, color="#667085", lw=0.9, ls=":", label="E2b-20")
+    ax.axhline(0.7909, color="#b54708", lw=0.9, ls="--", label="C1M-val20 (n=20)")
+    ax.axhline(0.8063, color="#667085", lw=0.9, ls=":", label="E2b-val20 (n=20)")
     for xi, yi, lab in zip(x, sv, labels):
         if lab in {"E2b", "E10", "E13", "E15b", "E17", "E18"}:
             ax.annotate(lab, (xi, yi), textcoords="offset points", xytext=(0, 6), ha="center", fontsize=7)
     ax.set_xticks(x); ax.set_xticklabels(labels, rotation=90, fontsize=6.5)
     ax.set_ylabel("SV cosine to target centroid")
-    ax.set_title("Speaker similarity across 20-sentence experiments", fontsize=9)
+    ax.set_title("Speaker similarity on val20 (n=20)", fontsize=9)
     ax.legend(frameon=False, fontsize=6.8, loc="lower left")
     ax.set_ylim(0.50, 0.86)
     ax = axes[1]
@@ -97,8 +101,9 @@ def fig2_ladder():
     ax.set_yscale("log")
     ax.set_xticks(x); ax.set_xticklabels(labels, rotation=90, fontsize=6.5)
     ax.set_ylabel("CER (Whisper, log)")
-    ax.set_title("Content degradation", fontsize=9)
-    ax.axhline(0.2874, color="#b54708", lw=0.9, ls="--")
+    ax.set_title("Content degradation on val20", fontsize=9)
+    ax.axhline(0.3523, color="#b54708", lw=0.9, ls="--", label="C1M-val20 CER")
+    ax.legend(frameon=False, fontsize=6.8, loc="upper left")
     fig.tight_layout()
     fig.savefig(FIG / "fig2_ladder.png", bbox_inches="tight")
     plt.close(fig)
@@ -138,7 +143,7 @@ def fig4_open():
     fig, axes = plt.subplots(1, 2, figsize=(8.6, 3.4), gridspec_kw={"width_ratios": [1, 1.15]})
     ax = axes[0]
     ax.plot(np.arange(1, n + 1), sv, "o-", ms=3, lw=1, color="#2f6fed")
-    ax.axhline(0.8128, color="#b54708", ls="--", lw=0.9, label="held-out C1M mean .813")
+    ax.axhline(0.8398, color="#b54708", ls="--", lw=0.9, label="real test50 mean .840")
     ax.set_ylim(0.62, 0.88)
     ax.set_xlabel("invented sentence index")
     ax.set_ylabel("SV to target centroid")
@@ -161,28 +166,28 @@ def fig5_decision():
     fig, ax = plt.subplots(figsize=(7.4, 3.9))
     ax.set_xlim(0, 10); ax.set_ylim(0, 6.2); ax.axis("off")
     stages = [
-        (0.3, 5.2, "strict no-reference contract\n(text only; no audio / cache)", "#e8f0ff"),
-        (3.8, 5.2, "E10–E18\nspeaker conditioning tests", "#fff4e5"),
-        (7.3, 5.2, "all fail\nSV .541–.778", "#fee4e2"),
-        (0.3, 3.2, "C1M wrapper\nband balance, SV .813", "#fff4e5"),
+        (0.3, 5.2, "L1/L2 contract\ncode path + cache", "#e8f0ff"),
+        (3.8, 5.2, "E10–E18\nconditioning tests", "#fff4e5"),
+        (7.3, 5.2, "point estimates\nSV .541–.778", "#fee4e2"),
+        (0.3, 3.2, "C1M wrapper\nSV .813, not a model", "#fff4e5"),
         (3.8, 3.2, "open-domain 20\nCER .075, SV .733", "#fee4e2"),
-        (7.3, 3.2, "pairwise .823\nmin .634", "#fee4e2"),
+        (7.3, 3.2, "real pairwise .768\nvs generated .823", "#f2f4f7"),
         (0.3, 1.2, "human judgment\n'not the same person'", "#fee4e2"),
-        (3.8, 1.2, "architecture pass\nidentity fail", "#f2f4f7"),
+        (3.8, 1.2, "identity fail\nL3/L4 not met", "#fee4e2"),
         (7.3, 1.2, "not a success claim", "#f2f4f7"),
     ]
     for x, y, t, c in stages:
-        box(ax, (x, y), 2.3, 0.55, t, fc=c)
-    for x1, y1, _, _ in stages[:2]:
-        arrow(ax, (x1 + 2.3, y1 + 0.27), (x1 + 3.5, y1 + 0.27))
-    # vertical / row links
-    arrow(ax, (1.45, 5.2), (1.45, 3.75))
-    arrow(ax, (2.6, 5.2), (3.8, 5.75))
-    arrow(ax, (4.95, 3.2), (5.95, 3.75))
-    arrow(ax, (8.45, 3.2), (8.45, 1.75))
-    arrow(ax, (2.6, 1.2), (3.8, 1.2))
-    ax.text(0.3, 0.45, "Falsification chain: contract pass, automatic partial, identity fail, human rejection.",
-            fontsize=7.5, color="#475467")
+        box(ax, (x, y), 2.3, 0.55, t, fc=c, fs=7.4)
+    # horizontal links, one per row; no diagonals
+    for y in (5.2, 3.2, 1.2):
+        arrow(ax, (2.6, y + 0.27), (3.8, y + 0.27))
+        arrow(ax, (6.1, y + 0.27), (7.3, y + 0.27))
+    # vertical links down the left and right columns
+    for x in (1.45, 8.45):
+        arrow(ax, (x, 5.2), (x, 3.75))
+        arrow(ax, (x, 3.2), (x, 1.75))
+    ax.text(0.3, 0.45, "Falsification chain: path evidence, automatic partial, identity fail, human rejection.",
+            fontsize=7.2, color="#475467")
     fig.tight_layout()
     fig.savefig(FIG / "fig5_decision.png", bbox_inches="tight")
     plt.close(fig)

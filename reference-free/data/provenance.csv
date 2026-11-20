@@ -1,0 +1,23 @@
+id,split,n,seed,steps,checkpoint,evaluator,artifacts,recomputable,notes
+E0,val20,20,not_recorded,32,E0,summary,summary-only,no,早期基线；仅报告均值
+E0b,val20,20,not_recorded,32,E0b,summary,summary-only,no,早期基线；仅报告均值
+E1,val20,20,42,32,E1,ERes2NetV2+Whisper small,logs/e1_pilot20_score.json,partial,score JSON 存于 logs 根目录而非 run 目录
+E2-e1,val20,20,not_recorded,32,E2 e1,summary,summary-only,no,仅报告均值
+E2b,val20,20,42,32,e2_v5dev.pth,ERes2NetV2+Whisper small,logs/e2b_pilot20_score.json,partial,score JSON 存于 logs 根目录；CER .3268
+E3,val20,20,not_recorded,32,E3,summary,summary-only,no,仅报告均值
+E4,val20,20,not_recorded,32,E4,summary,summary-only,no,有 runaway
+P1/P1b/P1c,val20,20,not_recorded,32,prefix,summary,summary-only,no,仅报告均值
+S1-clean,val20,20,not_recorded,32,S1_clean,summary,summary-only,no,仅报告均值
+E5,val20,20,not_recorded,32,E5,summary,summary-only,no,混合实验
+E10-E18,val20,20,not_recorded,32,deleted,summary,summary-only,no,权重/日志/逐样本 JSON 已删除；只能引用均值
+C1M-val20,val20,20,42,32,e2_v5dev.pth + C1M,ERes2NetV2+Whisper small,audio+score,partial,本次补跑；score JSON 有逐句 CER/SV；无权重不能重生成音频
+E2b-test50x3,test50,150,42/43/44,32,e2_v5dev.pth,ERes2NetV2+Whisper small,logs+summary+audio,partial,3 个目录；JSON 无 seed 字段
+C1M-50,test50,50,42,32,e2_v5dev.pth + C1M,ERes2NetV2+Whisper small,results+score+audio,partial,mastered 元数据缺失；不能从 results 重建逐句 SV
+Raw50,test50,50,42,32,e2_v5dev.pth,ERes2NetV2+Whisper small,summary,partial,raw 50 条摘要
+C1-50,test50,50,42,32,e2_v5dev.pth + C1,summary,summary-only,no,C1 静态 EQ；只保留摘要
+C1H-50,test50,50,42,32,e2_v5dev.pth + C1H,summary,summary-only,no,C1H 静态 EQ；只保留摘要
+Shelf-B-50,test50,50,42,32,e2_v5dev.pth + Shelf-B,summary,summary-only,no,Shelf-B；SV 0.8256，2–8k 过冲；同一 test50 选择
+Ref-control,test50,50,42,32,reference control,SV+Whisper,logs/e0_ref50_score.json,partial,S1 prompts=None + S2 reference；CER 均值被 #49 拉高
+Open20,new_text,20,42,32,e2_v5dev.pth + C1M,ERes2NetV2+Whisper small,audio+score+pairwise,partial,pairwise/逐句可复算；不能重生成音频
+Worst3,val20,3,42,32,e2_v5dev.pth + C1M,ERes2NetV2+Whisper small,score+text,partial,9/3/1 主观挑选，不是随机样本
+Real-test50,test50,50,not_applicable,not_applicable,real corpus,ERes2NetV2,CSV+pairwise,yes,目标质心=train 前 20 条

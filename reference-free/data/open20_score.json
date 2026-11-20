@@ -1,0 +1,729 @@
+{
+  "n": 20,
+  "cer_mean": 0.07536431845127498,
+  "sv_mean": 0.7332004368305206,
+  "sv_min": 0.6659966707229614,
+  "empty": 0,
+  "rows": [
+    {
+      "index": 1,
+      "text": "今日は駅前の新しいカフェで、ちょっとだけ休憩していこうよ。",
+      "speaker": "kan",
+      "checkpoint": "e2_v5dev.pth",
+      "ref_free": true,
+      "ref_audio_path": null,
+      "prompt_text": null,
+      "sample_rate": 48000,
+      "samples": 184320,
+      "duration_sec": 3.84,
+      "rms": 0.1228000046671405,
+      "peak": 0.8523334264755249,
+      "out": "s01.wav",
+      "mastered": {
+        "mode": "C1_lowcut_plus_high_shelf",
+        "fir_taps": 2049,
+        "target_rms": 0.1228,
+        "peak_ceil": 0.98,
+        "high_shelf": {
+          "hz": 2000.0,
+          "db": 0.75
+        },
+        "compressor": {
+          "threshold_db": -10.0,
+          "ratio": 1.5,
+          "attack_ms": 5.0,
+          "release_ms": 100.0,
+          "knee_db": 4.0
+        },
+        "gain": 0.001293645424092639
+      },
+      "hyp": "ボウは駅前の新しいカフェで、ちょっとだけ休憩していこうよ",
+      "cer": 0.07407407407407407,
+      "sv_cos": 0.7386601567268372
+    },
+    {
+      "index": 2,
+      "text": "この傘、色は地味だけど、雨の日はけっこう役に立つんだ。",
+      "speaker": "kan",
+      "checkpoint": "e2_v5dev.pth",
+      "ref_free": true,
+      "ref_audio_path": null,
+      "prompt_text": null,
+      "sample_rate": 48000,
+      "samples": 241920,
+      "duration_sec": 5.04,
+      "rms": 0.12279999944472773,
+      "peak": 0.8547778725624084,
+      "out": "s02.wav",
+      "mastered": {
+        "mode": "C1_lowcut_plus_high_shelf",
+        "fir_taps": 2049,
+        "target_rms": 0.1228,
+        "peak_ceil": 0.98,
+        "high_shelf": {
+          "hz": 2000.0,
+          "db": 0.75
+        },
+        "compressor": {
+          "threshold_db": -10.0,
+          "ratio": 1.5,
+          "attack_ms": 5.0,
+          "release_ms": 100.0,
+          "knee_db": 4.0
+        },
+        "gain": 0.00140719675161181
+      },
+      "hyp": "この傘、色は地味だけど、雨の日は結構やかに立つんだ",
+      "cer": 0.20833333333333334,
+      "sv_cos": 0.823967456817627
+    },
+    {
+      "index": 3,
+      "text": "冷蔵庫にプリンが二つあるけど、一個は明日のために残しておくね。",
+      "speaker": "kan",
+      "checkpoint": "e2_v5dev.pth",
+      "ref_free": true,
+      "ref_audio_path": null,
+      "prompt_text": null,
+      "sample_rate": 48000,
+      "samples": 216960,
+      "duration_sec": 4.52,
+      "rms": 0.12279999835927537,
+      "peak": 0.8229877352714539,
+      "out": "s03.wav",
+      "mastered": {
+        "mode": "C1_lowcut_plus_high_shelf",
+        "fir_taps": 2049,
+        "target_rms": 0.1228,
+        "peak_ceil": 0.98,
+        "high_shelf": {
+          "hz": 2000.0,
+          "db": 0.75
+        },
+        "compressor": {
+          "threshold_db": -10.0,
+          "ratio": 1.5,
+          "attack_ms": 5.0,
+          "release_ms": 100.0,
+          "knee_db": 4.0
+        },
+        "gain": 0.001437773714567208
+      },
+      "hyp": "冷蔵庫にプリンが二つあるけど、一個は明日のために残しておくね",
+      "cer": 0.0,
+      "sv_cos": 0.7423677444458008
+    },
+    {
+      "index": 4,
+      "text": "週末に海までドライブするなら、朝早く出たほうがいいよ。",
+      "speaker": "kan",
+      "checkpoint": "e2_v5dev.pth",
+      "ref_free": true,
+      "ref_audio_path": null,
+      "prompt_text": null,
+      "sample_rate": 48000,
+      "samples": 203520,
+      "duration_sec": 4.24,
+      "rms": 0.11768819831933318,
+      "peak": 0.9800000190734863,
+      "out": "s04.wav",
+      "mastered": {
+        "mode": "C1_lowcut_plus_high_shelf",
+        "fir_taps": 2049,
+        "target_rms": 0.1228,
+        "peak_ceil": 0.98,
+        "high_shelf": {
+          "hz": 2000.0,
+          "db": 0.75
+        },
+        "compressor": {
+          "threshold_db": -10.0,
+          "ratio": 1.5,
+          "attack_ms": 5.0,
+          "release_ms": 100.0,
+          "knee_db": 4.0
+        },
+        "gain": 0.0014586852180789032
+      },
+      "hyp": "週末に海までドライブするなら、朝早く出た方がいいよ",
+      "cer": 0.08,
+      "sv_cos": 0.7037068605422974
+    },
+    {
+      "index": 5,
+      "text": "この曲、最初は変な感じがしたけど、今はけっこう好き。",
+      "speaker": "kan",
+      "checkpoint": "e2_v5dev.pth",
+      "ref_free": true,
+      "ref_audio_path": null,
+      "prompt_text": null,
+      "sample_rate": 48000,
+      "samples": 228480,
+      "duration_sec": 4.76,
+      "rms": 0.100496556832089,
+      "peak": 0.9799999594688416,
+      "out": "s05.wav",
+      "mastered": {
+        "mode": "C1_lowcut_plus_high_shelf",
+        "fir_taps": 2049,
+        "target_rms": 0.1228,
+        "peak_ceil": 0.98,
+        "high_shelf": {
+          "hz": 2000.0,
+          "db": 0.75
+        },
+        "compressor": {
+          "threshold_db": -10.0,
+          "ratio": 1.5,
+          "attack_ms": 5.0,
+          "release_ms": 100.0,
+          "knee_db": 4.0
+        },
+        "gain": 0.0013888750008001249
+      },
+      "hyp": "この曲、最初は変な感じがしたけど、今はペックを好き",
+      "cer": 0.17391304347826086,
+      "sv_cos": 0.7491840124130249
+    },
+    {
+      "index": 6,
+      "text": "スマホの充電が少ないから、駅に着いたらコンセントを探そう。",
+      "speaker": "kan",
+      "checkpoint": "e2_v5dev.pth",
+      "ref_free": true,
+      "ref_audio_path": null,
+      "prompt_text": null,
+      "sample_rate": 48000,
+      "samples": 205440,
+      "duration_sec": 4.28,
+      "rms": 0.12280000039095552,
+      "peak": 0.7619365453720093,
+      "out": "s06.wav",
+      "mastered": {
+        "mode": "C1_lowcut_plus_high_shelf",
+        "fir_taps": 2049,
+        "target_rms": 0.1228,
+        "peak_ceil": 0.98,
+        "high_shelf": {
+          "hz": 2000.0,
+          "db": 0.75
+        },
+        "compressor": {
+          "threshold_db": -10.0,
+          "ratio": 1.5,
+          "attack_ms": 5.0,
+          "release_ms": 100.0,
+          "knee_db": 4.0
+        },
+        "gain": 0.0017472692942135846
+      },
+      "hyp": "スマホの充電が少ないから、駅に着いたらコンセントを探そう",
+      "cer": 0.0,
+      "sv_cos": 0.6659966707229614
+    },
+    {
+      "index": 7,
+      "text": "窓の外、雪がちらついてるね。明日は積もるかもしれない。",
+      "speaker": "kan",
+      "checkpoint": "e2_v5dev.pth",
+      "ref_free": true,
+      "ref_audio_path": null,
+      "prompt_text": null,
+      "sample_rate": 48000,
+      "samples": 249600,
+      "duration_sec": 5.2,
+      "rms": 0.10612885509907984,
+      "peak": 0.9800000190734863,
+      "out": "s07.wav",
+      "mastered": {
+        "mode": "C1_lowcut_plus_high_shelf",
+        "fir_taps": 2049,
+        "target_rms": 0.1228,
+        "peak_ceil": 0.98,
+        "high_shelf": {
+          "hz": 2000.0,
+          "db": 0.75
+        },
+        "compressor": {
+          "threshold_db": -10.0,
+          "ratio": 1.5,
+          "attack_ms": 5.0,
+          "release_ms": 100.0,
+          "knee_db": 4.0
+        },
+        "gain": 0.0016140830158544077
+      },
+      "hyp": "窓の外、雪が散らついてるね。明日は積もるかもしれない。",
+      "cer": 0.041666666666666664,
+      "sv_cos": 0.6763599514961243
+    },
+    {
+      "index": 8,
+      "text": "部屋の観葉植物、水をあげすぎたせいか、少し元気がない。",
+      "speaker": "kan",
+      "checkpoint": "e2_v5dev.pth",
+      "ref_free": true,
+      "ref_audio_path": null,
+      "prompt_text": null,
+      "sample_rate": 48000,
+      "samples": 251520,
+      "duration_sec": 5.24,
+      "rms": 0.11417116119642737,
+      "peak": 0.9800000190734863,
+      "out": "s08.wav",
+      "mastered": {
+        "mode": "C1_lowcut_plus_high_shelf",
+        "fir_taps": 2049,
+        "target_rms": 0.1228,
+        "peak_ceil": 0.98,
+        "high_shelf": {
+          "hz": 2000.0,
+          "db": 0.75
+        },
+        "compressor": {
+          "threshold_db": -10.0,
+          "ratio": 1.5,
+          "attack_ms": 5.0,
+          "release_ms": 100.0,
+          "knee_db": 4.0
+        },
+        "gain": 0.0015851369715266436
+      },
+      "hyp": "ネアの寛容植物、水をあげすぎたせいか、少し元気がない",
+      "cer": 0.16666666666666666,
+      "sv_cos": 0.7394413948059082
+    },
+    {
+      "index": 9,
+      "text": "図書館で借りた本、返すのを忘れてて、今日が期限なんだ。",
+      "speaker": "kan",
+      "checkpoint": "e2_v5dev.pth",
+      "ref_free": true,
+      "ref_audio_path": null,
+      "prompt_text": null,
+      "sample_rate": 48000,
+      "samples": 226560,
+      "duration_sec": 4.72,
+      "rms": 0.12279999852186814,
+      "peak": 0.9728905558586121,
+      "out": "s09.wav",
+      "mastered": {
+        "mode": "C1_lowcut_plus_high_shelf",
+        "fir_taps": 2049,
+        "target_rms": 0.1228,
+        "peak_ceil": 0.98,
+        "high_shelf": {
+          "hz": 2000.0,
+          "db": 0.75
+        },
+        "compressor": {
+          "threshold_db": -10.0,
+          "ratio": 1.5,
+          "attack_ms": 5.0,
+          "release_ms": 100.0,
+          "knee_db": 4.0
+        },
+        "gain": 0.0016161810101426256
+      },
+      "hyp": "図書館で借りた本。返すのを忘れてて、今日が機嫌なんだ。",
+      "cer": 0.08333333333333333,
+      "sv_cos": 0.7139108180999756
+    },
+    {
+      "index": 10,
+      "text": "新しい靴、サイズは合ってるけど、少しだけつま先がきつい。",
+      "speaker": "kan",
+      "checkpoint": "e2_v5dev.pth",
+      "ref_free": true,
+      "ref_audio_path": null,
+      "prompt_text": null,
+      "sample_rate": 48000,
+      "samples": 289920,
+      "duration_sec": 6.04,
+      "rms": 0.12279999947216585,
+      "peak": 0.9570503830909729,
+      "out": "s10.wav",
+      "mastered": {
+        "mode": "C1_lowcut_plus_high_shelf",
+        "fir_taps": 2049,
+        "target_rms": 0.1228,
+        "peak_ceil": 0.98,
+        "high_shelf": {
+          "hz": 2000.0,
+          "db": 0.75
+        },
+        "compressor": {
+          "threshold_db": -10.0,
+          "ratio": 1.5,
+          "attack_ms": 5.0,
+          "release_ms": 100.0,
+          "knee_db": 4.0
+        },
+        "gain": 0.0016258293833956627
+      },
+      "hyp": "新しい靴。サイズは合ってるけど、少しだけつま先がキツい",
+      "cer": 0.08,
+      "sv_cos": 0.7464316487312317
+    },
+    {
+      "index": 11,
+      "text": "昼ごはんに卵焼きを作ったけど、味見をしたら全部食べちゃった。",
+      "speaker": "kan",
+      "checkpoint": "e2_v5dev.pth",
+      "ref_free": true,
+      "ref_audio_path": null,
+      "prompt_text": null,
+      "sample_rate": 48000,
+      "samples": 238080,
+      "duration_sec": 4.96,
+      "rms": 0.12280000234939291,
+      "peak": 0.8686277270317078,
+      "out": "s11.wav",
+      "mastered": {
+        "mode": "C1_lowcut_plus_high_shelf",
+        "fir_taps": 2049,
+        "target_rms": 0.1228,
+        "peak_ceil": 0.98,
+        "high_shelf": {
+          "hz": 2000.0,
+          "db": 0.75
+        },
+        "compressor": {
+          "threshold_db": -10.0,
+          "ratio": 1.5,
+          "attack_ms": 5.0,
+          "release_ms": 100.0,
+          "knee_db": 4.0
+        },
+        "gain": 0.0016226541174751742
+      },
+      "hyp": "昼ご飯に卵焼きを作ったけど、味見をしたら全部食べちゃった",
+      "cer": 0.07142857142857142,
+      "sv_cos": 0.7085644602775574
+    },
+    {
+      "index": 12,
+      "text": "この道、夜になると暗いから、帰りは一緒に歩いてくれる？",
+      "speaker": "kan",
+      "checkpoint": "e2_v5dev.pth",
+      "ref_free": true,
+      "ref_audio_path": null,
+      "prompt_text": null,
+      "sample_rate": 48000,
+      "samples": 243840,
+      "duration_sec": 5.08,
+      "rms": 0.10384601953512375,
+      "peak": 0.9800000190734863,
+      "out": "s12.wav",
+      "mastered": {
+        "mode": "C1_lowcut_plus_high_shelf",
+        "fir_taps": 2049,
+        "target_rms": 0.1228,
+        "peak_ceil": 0.98,
+        "high_shelf": {
+          "hz": 2000.0,
+          "db": 0.75
+        },
+        "compressor": {
+          "threshold_db": -10.0,
+          "ratio": 1.5,
+          "attack_ms": 5.0,
+          "release_ms": 100.0,
+          "knee_db": 4.0
+        },
+        "gain": 0.001325187258614761
+      },
+      "hyp": "この道、夜になると暗いから、帰りは一緒に歩いてくれる",
+      "cer": 0.0,
+      "sv_cos": 0.7645288705825806
+    },
+    {
+      "index": 13,
+      "text": "旅行の写真、整理してたら、昔の恥ずかしい顔が出てきた。",
+      "speaker": "kan",
+      "checkpoint": "e2_v5dev.pth",
+      "ref_free": true,
+      "ref_audio_path": null,
+      "prompt_text": null,
+      "sample_rate": 48000,
+      "samples": 224640,
+      "duration_sec": 4.68,
+      "rms": 0.12279999933612154,
+      "peak": 0.9133930206298828,
+      "out": "s13.wav",
+      "mastered": {
+        "mode": "C1_lowcut_plus_high_shelf",
+        "fir_taps": 2049,
+        "target_rms": 0.1228,
+        "peak_ceil": 0.98,
+        "high_shelf": {
+          "hz": 2000.0,
+          "db": 0.75
+        },
+        "compressor": {
+          "threshold_db": -10.0,
+          "ratio": 1.5,
+          "attack_ms": 5.0,
+          "release_ms": 100.0,
+          "knee_db": 4.0
+        },
+        "gain": 0.0016987916405502238
+      },
+      "hyp": "旅行の写真、整理してたら昔の恥ずかしい顔が出てきた",
+      "cer": 0.0,
+      "sv_cos": 0.7067456245422363
+    },
+    {
+      "index": 14,
+      "text": "エアコンのリモコン、またソファの隙間に落ちちゃったみたい。",
+      "speaker": "kan",
+      "checkpoint": "e2_v5dev.pth",
+      "ref_free": true,
+      "ref_audio_path": null,
+      "prompt_text": null,
+      "sample_rate": 48000,
+      "samples": 176640,
+      "duration_sec": 3.68,
+      "rms": 0.10553848458490875,
+      "peak": 0.9800000190734863,
+      "out": "s14.wav",
+      "mastered": {
+        "mode": "C1_lowcut_plus_high_shelf",
+        "fir_taps": 2049,
+        "target_rms": 0.1228,
+        "peak_ceil": 0.98,
+        "high_shelf": {
+          "hz": 2000.0,
+          "db": 0.75
+        },
+        "compressor": {
+          "threshold_db": -10.0,
+          "ratio": 1.5,
+          "attack_ms": 5.0,
+          "release_ms": 100.0,
+          "knee_db": 4.0
+        },
+        "gain": 0.0014276059669112477
+      },
+      "hyp": "エアコンのリモコンまたソファの隙間に落ちちゃったみたい",
+      "cer": 0.0,
+      "sv_cos": 0.7009832859039307
+    },
+    {
+      "index": 15,
+      "text": "明日の会議、資料はもう印刷しておいたほうがいいかな。",
+      "speaker": "kan",
+      "checkpoint": "e2_v5dev.pth",
+      "ref_free": true,
+      "ref_audio_path": null,
+      "prompt_text": null,
+      "sample_rate": 48000,
+      "samples": 186240,
+      "duration_sec": 3.88,
+      "rms": 0.12280000083433949,
+      "peak": 0.7693275809288025,
+      "out": "s15.wav",
+      "mastered": {
+        "mode": "C1_lowcut_plus_high_shelf",
+        "fir_taps": 2049,
+        "target_rms": 0.1228,
+        "peak_ceil": 0.98,
+        "high_shelf": {
+          "hz": 2000.0,
+          "db": 0.75
+        },
+        "compressor": {
+          "threshold_db": -10.0,
+          "ratio": 1.5,
+          "attack_ms": 5.0,
+          "release_ms": 100.0,
+          "knee_db": 4.0
+        },
+        "gain": 0.001692281791783479
+      },
+      "hyp": "明日の会議、資料はもう印刷しておいた方がいいかな?",
+      "cer": 0.08333333333333333,
+      "sv_cos": 0.6680059432983398
+    },
+    {
+      "index": 16,
+      "text": "この間のケーキ、甘さがちょうどよくて、また買いたいな。",
+      "speaker": "kan",
+      "checkpoint": "e2_v5dev.pth",
+      "ref_free": true,
+      "ref_audio_path": null,
+      "prompt_text": null,
+      "sample_rate": 48000,
+      "samples": 257280,
+      "duration_sec": 5.36,
+      "rms": 0.12280000279168693,
+      "peak": 0.9661161303520203,
+      "out": "s16.wav",
+      "mastered": {
+        "mode": "C1_lowcut_plus_high_shelf",
+        "fir_taps": 2049,
+        "target_rms": 0.1228,
+        "peak_ceil": 0.98,
+        "high_shelf": {
+          "hz": 2000.0,
+          "db": 0.75
+        },
+        "compressor": {
+          "threshold_db": -10.0,
+          "ratio": 1.5,
+          "attack_ms": 5.0,
+          "release_ms": 100.0,
+          "knee_db": 4.0
+        },
+        "gain": 0.001302433170399524
+      },
+      "hyp": "この間のケーキ、甘さがちょうど良くて、また買いたいなぁ",
+      "cer": 0.08333333333333333,
+      "sv_cos": 0.8569704294204712
+    },
+    {
+      "index": 17,
+      "text": "電車が遅れてるみたいだから、少し待ってから行こう。",
+      "speaker": "kan",
+      "checkpoint": "e2_v5dev.pth",
+      "ref_free": true,
+      "ref_audio_path": null,
+      "prompt_text": null,
+      "sample_rate": 48000,
+      "samples": 205440,
+      "duration_sec": 4.28,
+      "rms": 0.12279999959531558,
+      "peak": 0.8503189086914062,
+      "out": "s17.wav",
+      "mastered": {
+        "mode": "C1_lowcut_plus_high_shelf",
+        "fir_taps": 2049,
+        "target_rms": 0.1228,
+        "peak_ceil": 0.98,
+        "high_shelf": {
+          "hz": 2000.0,
+          "db": 0.75
+        },
+        "compressor": {
+          "threshold_db": -10.0,
+          "ratio": 1.5,
+          "attack_ms": 5.0,
+          "release_ms": 100.0,
+          "knee_db": 4.0
+        },
+        "gain": 0.0012336731928893902
+      },
+      "hyp": "電車が遅れてるみたいだから少し待ってから行こう",
+      "cer": 0.0,
+      "sv_cos": 0.8600510954856873
+    },
+    {
+      "index": 18,
+      "text": "君の作った味噌汁、具だくさんで、朝から元気が出るよ。",
+      "speaker": "kan",
+      "checkpoint": "e2_v5dev.pth",
+      "ref_free": true,
+      "ref_audio_path": null,
+      "prompt_text": null,
+      "sample_rate": 48000,
+      "samples": 289920,
+      "duration_sec": 6.04,
+      "rms": 0.1143420313119782,
+      "peak": 0.9800000190734863,
+      "out": "s18.wav",
+      "mastered": {
+        "mode": "C1_lowcut_plus_high_shelf",
+        "fir_taps": 2049,
+        "target_rms": 0.1228,
+        "peak_ceil": 0.98,
+        "high_shelf": {
+          "hz": 2000.0,
+          "db": 0.75
+        },
+        "compressor": {
+          "threshold_db": -10.0,
+          "ratio": 1.5,
+          "attack_ms": 5.0,
+          "release_ms": 100.0,
+          "knee_db": 4.0
+        },
+        "gain": 0.001811611912081253
+      },
+      "hyp": "あ、君の作った味噌汁、ぐーだくさんで朝から元気が出るよ",
+      "cer": 0.13043478260869565,
+      "sv_cos": 0.7196727991104126
+    },
+    {
+      "index": 19,
+      "text": "ベランダに干した洗濯物、急に降ってきた雨でびしょびしょ。",
+      "speaker": "kan",
+      "checkpoint": "e2_v5dev.pth",
+      "ref_free": true,
+      "ref_audio_path": null,
+      "prompt_text": null,
+      "sample_rate": 48000,
+      "samples": 188160,
+      "duration_sec": 3.92,
+      "rms": 0.12280000314921975,
+      "peak": 0.9198383092880249,
+      "out": "s19.wav",
+      "mastered": {
+        "mode": "C1_lowcut_plus_high_shelf",
+        "fir_taps": 2049,
+        "target_rms": 0.1228,
+        "peak_ceil": 0.98,
+        "high_shelf": {
+          "hz": 2000.0,
+          "db": 0.75
+        },
+        "compressor": {
+          "threshold_db": -10.0,
+          "ratio": 1.5,
+          "attack_ms": 5.0,
+          "release_ms": 100.0,
+          "knee_db": 4.0
+        },
+        "gain": 0.0015983664952708967
+      },
+      "hyp": "ベランダに干した洗濯物急に降ってきた雨でビショビショ",
+      "cer": 0.23076923076923078,
+      "sv_cos": 0.6752189993858337
+    },
+    {
+      "index": 20,
+      "text": "今夜は星がよく見えるから、少しだけ散歩してみない？",
+      "speaker": "kan",
+      "checkpoint": "e2_v5dev.pth",
+      "ref_free": true,
+      "ref_audio_path": null,
+      "prompt_text": null,
+      "sample_rate": 48000,
+      "samples": 182400,
+      "duration_sec": 3.8,
+      "rms": 0.12280000208427601,
+      "peak": 0.8431339263916016,
+      "out": "s20.wav",
+      "mastered": {
+        "mode": "C1_lowcut_plus_high_shelf",
+        "fir_taps": 2049,
+        "target_rms": 0.1228,
+        "peak_ceil": 0.98,
+        "high_shelf": {
+          "hz": 2000.0,
+          "db": 0.75
+        },
+        "compressor": {
+          "threshold_db": -10.0,
+          "ratio": 1.5,
+          "attack_ms": 5.0,
+          "release_ms": 100.0,
+          "knee_db": 4.0
+        },
+        "gain": 0.0015219598750215657
+      },
+      "hyp": "今夜は星がよく見えるから、少しだけ散歩してみない?",
+      "cer": 0.0,
+      "sv_cos": 0.7032405138015747
+    }
+  ]
+}

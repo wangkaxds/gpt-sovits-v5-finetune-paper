@@ -1,0 +1,7 @@
+id,metric,value,source,note
+D2,gt_mel_vocoder_cpp,0.1260,logs/gt_mel_vocoder.log,GT mel through same V5 vocoder; not an upper bound
+D2,truth_cpp_48k,0.1659,reports/FINAL_REPORT.md,
+P5,gt_mel_cpp,0.1644,reports/FINAL_REPORT.md,summary-only; no score JSON
+P5,no_ref_sv,0.7424,reports/FINAL_REPORT.md,20-sentence summary
+P5,no_ref_cer,0.8939,reports/FINAL_REPORT.md,same numeric as E5 CER by coincidence; not a shared artifact
+E2b-zero,status,no_retained_artifact,reports/FAILURE_LOG.md,do not cite 0.8039 as reproducible

@@ -1,0 +1,11 @@
+﻿item,value,source,note
+spk_emb_norm,1.4622,weights/e2_v5dev.pth,512-d; vector per-channel RMS 0.0646
+ref_enc_neutral_norm,33.0998,pretrained ref_enc(neutral),random init was 1.4779
+E13_ref_norm,25.34,E13 deleted artifact,one reference output; not a second requirement
+cond_layer_weight_norm,31.705,weights/e2_v5dev.pth,1x1 + weight_norm
+cond_layer_bias_rms,0.0804,weights/e2_v5dev.pth,per-channel
+Wg_rms,0.0332,weights/e2_v5dev.pth,Wg output per-channel; 0.41x bias
+Wg_rms_at_25_34,0.576,derived,7.17x bias
+wns1_delta_l2_pct,6.12,weight audit,vs pretrained
+cond_layer_delta_l2_pct,5.40,weight audit,
+
