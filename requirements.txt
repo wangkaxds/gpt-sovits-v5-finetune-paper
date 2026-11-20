@@ -1,0 +1,8 @@
+# Statistical / figure reproduction only.
+# The V5 training and inference environment is separate and is documented in
+# paper.md section 3.2; those versions are not bundled here.
+numpy>=1.24
+scipy>=1.10
+matplotlib>=3.7
+soundfile>=0.12
+markdown>=3.5

@@ -1,14 +1,27 @@
-"""Verify that the checkpoint's adapter suffixes can be recovered without
-hard-coding q/k/v/out. This does not run audio inference.
-"""
-import os, re, sys, glob
-sys.path.insert(0, r"D:\DevCache\temp\dsh-ellEc6\gsv\v5\GPT-SoVITS-v5-20261006\GPT_SoVITS")
-from process_ckpt import load_sovits_new
+"""Verify that checkpoint adapter suffixes can be recovered without hard-coded
+q/k/v/out targets. This does not load the audio model or generate speech.
 
-ROOT = r"D:\DevCache\temp\dsh-ellEc6\gsv\v5\GPT-SoVITS-v5-20261006"
-for route in ["r16", "ada8", "all8", "vo16", "refenc"]:
-    files = sorted(glob.glob(os.path.join(ROOT, f"SoVITS_weights_v5dev_{route}", "*.pth")))
-    ck = load_sovits_new(files[-1])
+Set GPT_SOVITS_ROOT to the GPT-SoVITS V5 package directory.
+"""
+import glob
+import os
+import re
+import sys
+
+ROOT = os.environ.get("GPT_SOVITS_ROOT")
+if not ROOT:
+    raise SystemExit("Set GPT_SOVITS_ROOT to the GPT-SoVITS V5 package directory")
+sys.path.insert(0, os.path.join(ROOT, "GPT_SoVITS"))
+from process_ckpt import load_sovits_new  # noqa: E402
+
+for route in ["r16", "ada8", "all8", "vo16", "refenc", "full"]:
+    dirname = "SoVITS_weights_v5_full" if route == "full" else f"SoVITS_weights_v5dev_{route}"
+    files = sorted(glob.glob(os.path.join(ROOT, dirname, "*.pth")))
+    if not files:
+        print(route, "NO FILES")
+        continue
+    path = max(files, key=lambda p: int(re.search(r"_s(\d+)", os.path.basename(p)).group(1)))
+    ck = load_sovits_new(path)
     targets = set()
     for key in ck["weight"]:
         if ".lora_A." not in key:

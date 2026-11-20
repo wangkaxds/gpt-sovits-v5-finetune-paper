@@ -1,7 +1,10 @@
 import re, ast, json, os
 from datetime import datetime
+from pathlib import Path
 
-LOG = r"D:\DevCache\temp\dsh-ellEc6\gsv\kan_exp\train.log"
+LOG = os.environ.get("GSV_TRAIN_LOG")
+if not LOG:
+    raise SystemExit("Set GSV_TRAIN_LOG to the GPT-SoVITS train.log path")
 runs = []
 cur = None
 last_ts = None
@@ -62,4 +65,4 @@ for r in runs:
     if r["losses"]:
         out.append({"name": r["name"], "dir": r["dir"], "start": str(r["start"]), "end": str(r["end"]),
                     "losses": r["losses"]})
-json.dump(out, open(r"D:\杂活\甜蜜女友3\v5_paper\data\train_runs_compact.json", "w", encoding="utf-8"), ensure_ascii=False)
+json.dump(out, open(Path(__file__).resolve().parent.parent / "data" / "train_runs_compact.json", "w", encoding="utf-8"), ensure_ascii=False)

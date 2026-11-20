@@ -1,7 +1,10 @@
 import glob, json, os, csv
+from pathlib import Path
 
-BASE = r"D:\杂活\甜蜜女友3\v5_ft_eval"
-OUT = r"D:\杂活\甜蜜女友3\v5_paper\data\all_suite_summary.csv"
+BASE = os.environ.get("V5_EVAL_ROOT")
+if not BASE:
+    raise SystemExit("Set V5_EVAL_ROOT to the local v5_ft_eval directory")
+OUT = str(Path(__file__).resolve().parent.parent / "data" / "all_suite_summary.csv")
 rows = []
 for p in glob.glob(os.path.join(BASE, "suite_*", "*_suite.json")):
     try:

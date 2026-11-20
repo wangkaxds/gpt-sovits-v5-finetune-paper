@@ -1,41 +1,37 @@
-import os, torch, glob, re, sys
-sys.path.insert(0, r"D:\DevCache\temp\dsh-ellEc6\gsv\v5\GPT-SoVITS-v5-20261006\GPT_SoVITS")
-from process_ckpt import load_sovits_new
+"""Print LoRA modules saved in each checkpoint. Requires GPT_SOVITS_ROOT."""
+import glob
+import os
+import re
+import sys
 
-ROOT = r"D:\DevCache\temp\dsh-ellEc6\gsv\v5\GPT-SoVITS-v5-20261006"
-dirs = [
-    "SoVITS_weights_v5dev_r4", "SoVITS_weights_v5dev_r8", "SoVITS_weights_v5dev_r16",
-    "SoVITS_weights_v5dev_r32", "SoVITS_weights_v5dev_clean16", "SoVITS_weights_v5dev_pair16",
-    "SoVITS_weights_v5dev_ada8", "SoVITS_weights_v5dev_out4", "SoVITS_weights_v5dev_vo16",
-    "SoVITS_weights_v5dev_wns4", "SoVITS_weights_v5dev_fixed16", "SoVITS_weights_v5dev_all8",
-    "SoVITS_weights_v5dev_last5b", "SoVITS_weights_v5dev_refenc", "SoVITS_weights_v5dev_qv16b",
-    "SoVITS_weights_v5dev_aug16",
-]
-for d in dirs:
-    files = sorted(glob.glob(os.path.join(ROOT, d, "*.pth")))
+ROOT = os.environ.get("GPT_SOVITS_ROOT")
+if not ROOT:
+    raise SystemExit("Set GPT_SOVITS_ROOT to the GPT-SoVITS V5 package directory")
+sys.path.insert(0, os.path.join(ROOT, "GPT_SoVITS"))
+from process_ckpt import load_sovits_new  # noqa: E402
+
+ROUTE_DIRS = {
+    "full": "SoVITS_weights_v5_full",
+}
+routes = ["r4", "r8", "r16", "r32", "clean16", "pair16", "ada8", "out4",
+          "vo16", "wns4", "fixed16", "all8", "last5b", "refenc", "qv16b", "aug16", "full"]
+for route in routes:
+    dirname = ROUTE_DIRS.get(route, f"SoVITS_weights_v5dev_{route}")
+    files = sorted(glob.glob(os.path.join(ROOT, dirname, "*.pth")))
     if not files:
-        print(d, "NO FILES")
+        print(route, "NO FILES")
         continue
-    chosen = None
-    for f in reversed(files):
-        try:
-            ck = load_sovits_new(f)
-            chosen = (f, ck)
-            break
-        except Exception:
-            continue
-    if chosen is None:
-        print(d, "ALL UNREADABLE")
-        continue
-    f, ck = chosen
+    path = max(files, key=lambda p: int(re.search(r"_s(\d+)", os.path.basename(p)).group(1)))
+    ck = load_sovits_new(path)
     sd = ck.get("weight", ck)
     keys = [k for k in sd if "lora_" in k]
-    mods = []
-    for k in keys:
-        m = re.sub(r"\.lora_[AB]\.default\.(weight|bias)$", "", k)
-        if m not in mods:
-            mods.append(m)
-    print(f"\n{d} | file={os.path.basename(f)} | total_keys={len(sd)} | lora_keys={len(keys)} | modules={len(mods)}")
-    print("  " + "\n  ".join(mods[:16]))
-    if len(mods) > 16:
+    modules = []
+    for key in keys:
+        module = re.sub(r"\.lora_[AB]\.default\.(weight|bias)$", "", key)
+        if module not in modules:
+            modules.append(module)
+    print(f"\n{route} | file={os.path.basename(path)} | total_keys={len(sd)} | "
+          f"lora_keys={len(keys)} | modules={len(modules)}")
+    print("  " + "\n  ".join(modules[:16]))
+    if len(modules) > 16:
         print("  ...")

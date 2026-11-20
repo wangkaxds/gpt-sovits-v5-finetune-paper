@@ -1,0 +1,20 @@
+route,motivation,config,observed,anomaly_and_investigation,confidence,advice
+r4,容量最小改动,q+v rank4 lr5e-6 1200步,val 与基线差在0.001内；无完整30句test,Loss末点上升；未单独排查,中,容量不是主要瓶颈；不要用r4判断音色上限
+r8,中间容量,q+v+out rank8 lr1e-5 1200步,val s400 +0.0002；无30句test,无异常,中,rank提高没有带来可见收益
+r16,更大容量,q+v+out rank16 lr1e-5 1200步,val s300 +0.001量级；30句test未复现,无异常,中,继续加rank收益递减
+r32,最大rank,q+v+out rank32 lr5e-6 1200步,val 0.8947；无30句test,Loss尖峰；未见崩溃,中,容量不是瓶颈；大rank更易过拟合
+clean16,去噪/短句,863句清洗 r16 q/v/out lr5e-6,val s700 +0.0012；test s700 -0.0010,s700峰值未泛化,中,清洗降低毛刺但不改音色瓶颈
+out4,只改输出投影,to_out.0 rank4 lr1e-5 1200步,val 0.8935-0.8939；无30句test,无异常,低到中,输出层容量太小；不能据此否定所有LoRA
+ada8,条件调制,attn_norm.linear rank8 lr5e-5 1200步,修复前五Checkpoint完全相同；修复后test +0.0002 / ASR -0.008,loader硬编码q/k/v/out；已修复并重测seed1,低到中,先审计加载再解释结果；单seed不算稳定
+all8,最大LoRA覆盖,q/k/v/out+FF rank8 lr5e-6 1200步,修复前FF被忽略；修复后test +0.0010 p=.0084 / ASR +0.003,loader缺陷；修复后seed1重测；无多seed,探索性,统计小效应不等于可用；需多seed与时长控制
+qv16b,官方风格q/v,q/v rank16 seg20480 lr2e-5,val s400 0.8940 低于v5dev 0.8945,无异常,中,官方配方不保证在单说话人小数据上更好
+pair16,外部参考配对,q/v/out r16 外部参考,test 0.8822/0.8755 vs 0.8818/0.8764,外部参考域不匹配；未单独消融,中,参考条件改动没有稳定收益
+fixed16,固定参考,q/v/out r16 固定参考,test 0.8823 vs 0.8818,自动resume旧权重；删logs重跑,中,固定参考结果接近噪声
+syn,自蒸馏扩数据,v5dev+ref1生成869句 r16,val s869 0.8823 vs 0.8935；无可核对30句test,无完整test记录,低,不要把val下降当成test结论
+last5,后五层全参,to_q LoRA+block17-21 lr5e-7 1200步,val 0.8940与基线同；权重已删除,权重删除；全参加载未复核,无法验证,不要推断真实表现；需要权重或重训
+last5b,后五层全参高lr,to_q LoRA+block17-21 lr5e-6 1200步,val s600 0.8933 / s1200 0.8916；权重已删除,权重删除；加载未复核,无法验证,不要推断真实表现；不要为补表重训
+refenc,直接改音色锚点,ref_enc全参+q LoRA r4 lr5e-5,val s1200 0.8825 / ASR .8679；句子崩,移除g.detach与refer_spec补丁；加载相对可信,高（现象）/假设（机制）,条件侧改动会同时伤SV/ASR；机制仍需对照
+s1,语义/韵律侧,GPT s1全参 1 epoch 149步,test SV .8701 vs .8818 / ASR .9314 vs .9080,无听感盲测,中,音色不只在CFM；s1改动会伤SV
+aug16,数据增强,3x增强 r16 3600步,val s800后持续退步；test .8799,无异常,中,重复文本不等于新信息；早停
+wns4,条件融合,to_v LoRA+wns1全参 29.85M lr1e-6,val s600 +.0011 但ASR .9395 vs .9469；12句test .8881 vs .8901,12句test非30句,低到中,SV小升以咬字为代价；需30句复测
+full-data LoRA,全量数据更久训练,q/k/v/out rank32 lr未记录 2 epoch 5668步,12句test .8696 vs .8684 / ASR .8886 vs .8861,完整配置未记录；不是全参,低,文件名full指数据不是参数；不能当全参证据

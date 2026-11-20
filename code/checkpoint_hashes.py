@@ -1,23 +1,34 @@
-import os, glob, sys, hashlib
-import torch
-sys.path.insert(0, r"D:\DevCache\temp\dsh-ellEc6\gsv\v5\GPT-SoVITS-v5-20261006\GPT_SoVITS")
-from process_ckpt import load_sovits_new
+"""Hash adapter/full-condition tensors across checkpoints. Requires GPT_SOVITS_ROOT."""
+import glob
+import hashlib
+import os
+import sys
 
-ROOT = r"D:\DevCache\temp\dsh-ellEc6\gsv\v5\GPT-SoVITS-v5-20261006"
+import torch
+
+ROOT = os.environ.get("GPT_SOVITS_ROOT")
+if not ROOT:
+    raise SystemExit("Set GPT_SOVITS_ROOT to the GPT-SoVITS V5 package directory")
+sys.path.insert(0, os.path.join(ROOT, "GPT_SoVITS"))
+from process_ckpt import load_sovits_new  # noqa: E402
+
 
 def digest(sd):
     h = hashlib.sha256()
-    for k in sorted(sd):
-        v = sd[k]
-        if torch.is_tensor(v):
-            h.update(k.encode())
-            h.update(v.detach().cpu().float().numpy().tobytes())
+    for key in sorted(sd):
+        value = sd[key]
+        if torch.is_tensor(value):
+            h.update(key.encode())
+            h.update(value.detach().cpu().float().numpy().tobytes())
     return h.hexdigest()[:16]
 
-for route in ["ada8", "all8", "r16", "refenc"]:
-    fs = sorted(glob.glob(os.path.join(ROOT, f"SoVITS_weights_v5dev_{route}", "*.pth")))
-    print(f"\n{route} files={len(fs)}")
-    for f in fs[::max(1, len(fs)//5)]:
-        ck = load_sovits_new(f)
-        sd = {k: v for k, v in ck["weight"].items() if "lora_" in k or k.startswith(("ref_enc", "wns1"))}
-        print(os.path.basename(f), digest(sd), "keys", len(sd))
+
+for route in ["ada8", "all8", "r16", "refenc", "full"]:
+    dirname = "SoVITS_weights_v5_full" if route == "full" else f"SoVITS_weights_v5dev_{route}"
+    files = sorted(glob.glob(os.path.join(ROOT, dirname, "*.pth")))
+    print(f"\n{route} files={len(files)}")
+    for path in files[::max(1, len(files) // 5)]:
+        ck = load_sovits_new(path)
+        sd = {k: v for k, v in ck["weight"].items()
+              if "lora_" in k or k.startswith(("ref_enc", "wns1"))}
+        print(os.path.basename(path), digest(sd), "keys", len(sd))

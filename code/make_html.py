@@ -12,14 +12,21 @@ h1 { font-size: 21pt; line-height: 1.3; border-bottom: 2px solid #333; padding-b
 h2 { font-size: 14pt; margin-top: 22px; border-left: 4px solid #2e75b6; padding-left: 8px; }
 h3 { font-size: 12pt; margin-top: 16px; }
 p { text-align: justify; }
-table { border-collapse: collapse; width: 100%; margin: 10px 0 14px; font-size: 9.2pt; }
-th, td { border: 1px solid #bbb; padding: 5px 6px; text-align: left; }
+table { border-collapse: collapse; width: 100%; margin: 10px 0 14px; font-size: 9.2pt;
+        table-layout: fixed; }
+th, td { border: 1px solid #bbb; padding: 5px 6px; text-align: left;
+         vertical-align: top; overflow-wrap: anywhere; word-break: break-word; }
 th { background: #eef2f7; }
 code { background: #f2f2f2; padding: 1px 3px; border-radius: 3px; font-size: 9pt; }
 pre { background: #f6f6f6; padding: 9px; overflow-x: auto; font-size: 8.6pt; }
 img { max-width: 100%; margin: 8px 0; }
 blockquote { border-left: 3px solid #999; margin: 8px 0; padding-left: 10px; color: #555; }
 hr { border: none; border-top: 1px solid #ddd; margin: 18px 0; }
+@media print {
+  h2, h3 { break-after: avoid; }
+  tr, img, pre { break-inside: avoid; }
+  table { font-size: 8.4pt; }
+}
 """
 html = f"""<!doctype html>
 <html lang="zh"><head><meta charset="utf-8">

@@ -1,7 +1,10 @@
 import json, csv, os
+from pathlib import Path
 
-BASE = r"D:\杂活\甜蜜女友3\v5_ft_eval"
-OUT = r"D:\杂活\甜蜜女友3\v5_paper\data"
+BASE = os.environ.get("V5_EVAL_ROOT")
+if not BASE:
+    raise SystemExit("Set V5_EVAL_ROOT to the local v5_ft_eval directory")
+OUT = str(Path(__file__).resolve().parent.parent / "data")
 os.makedirs(OUT, exist_ok=True)
 
 def rows(path, tag):

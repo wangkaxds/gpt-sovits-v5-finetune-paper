@@ -1,7 +1,10 @@
 import json, re, os, ast
+from pathlib import Path
 
-LOG = r"D:\DevCache\temp\dsh-ellEc6\gsv\kan_exp\train.log"
-OUT = r"D:\杂活\甜蜜女友3\v5_paper\data\train_runs.json"
+LOG = os.environ.get("GSV_TRAIN_LOG")
+if not LOG:
+    raise SystemExit("Set GSV_TRAIN_LOG to the GPT-SoVITS train.log path")
+OUT = str(Path(__file__).resolve().parent.parent / "data" / "train_runs.json")
 runs = []
 cur = None
 for line in open(LOG, encoding="utf-8", errors="replace"):
@@ -59,5 +62,3 @@ for i, r in enumerate(runs):
           f"ckpts={len(r['ckpts'])}")
 json.dump(runs, open(OUT, "w", encoding="utf-8"), ensure_ascii=False)
 print("saved", OUT)
-
-

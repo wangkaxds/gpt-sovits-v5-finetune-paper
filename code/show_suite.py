@@ -1,5 +1,8 @@
-import csv, sys
-rows = list(csv.DictReader(open(r"D:\杂活\甜蜜女友3\v5_paper\data\all_suite_summary.csv", encoding="utf-8")))
+import csv
+import sys
+from pathlib import Path
+
+rows = list(csv.DictReader(open(Path(__file__).resolve().parent.parent / "data" / "all_suite_summary.csv", encoding="utf-8")))
 suite = sys.argv[1] if len(sys.argv) > 1 else "suite_qv16b"
 for r in rows:
     if r["suite"] == suite:
