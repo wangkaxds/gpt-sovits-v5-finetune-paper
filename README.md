@@ -66,3 +66,12 @@ python code/test_lora_loader_guards.py
 ## 引用
 
 如果这篇记录对你有用，请引用本仓库 URL，并注明 GPT-SoVITS V5 的原始项目。
+
+## 第二篇：严格无参考单说话人推理
+
+同一 V5dev 工件上的后续负结果，单独放在 [reference-free/](reference-free/README.md)：
+
+- [论文 PDF](reference-free/paper.pdf) · [Markdown](reference-free/paper.md) · [HTML](reference-free/paper.html)
+- 结论：严格无参考推理合同通过，但训练学习 Kan 音色的目标没有成立。
+- 50 条 held-out SV 0.8258（参考控制 0.8938）；20 句完全新编文本 SV 0.7332、pairwise 最低 0.634；用户判定“没有一个同一个人”。
+- E10–E18 条件注入/解冻全部失败；C1M 是静态母带 wrapper，不是模型。

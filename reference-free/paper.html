@@ -1,0 +1,810 @@
+<!doctype html>
+<html lang="zh"><head><meta charset="utf-8">
+<title>GPT-SoVITS V5 的严格无参考单说话人推理：条件通路审计与系统性负结果</title>
+<style>
+@page { size: A4; margin: 18mm 16mm 18mm 16mm; }
+body { font-family: "Microsoft YaHei", "Noto Sans SC", "Segoe UI", sans-serif;
+       font-size: 10.5pt; line-height: 1.65; color: #222; max-width: 900px; margin: 0 auto; }
+h1 { font-size: 21pt; line-height: 1.3; border-bottom: 2px solid #333; padding-bottom: 8px; }
+h2 { font-size: 14pt; margin-top: 22px; border-left: 4px solid #2e75b6; padding-left: 8px; }
+h3 { font-size: 12pt; margin-top: 16px; }
+p { text-align: justify; }
+table { border-collapse: collapse; width: 100%; margin: 10px 0 14px; font-size: 9.0pt;
+        table-layout: fixed; }
+thead { display: table-header-group; }
+tbody tr { break-inside: avoid; }
+p { orphans: 3; widows: 3; }
+th, td { border: 1px solid #bbb; padding: 5px 6px; text-align: left;
+         vertical-align: top; overflow-wrap: anywhere; word-break: break-word; }
+th { background: #eef2f7; }
+code { background: #f2f2f2; padding: 1px 3px; border-radius: 3px; font-size: 9pt; }
+pre { background: #f6f6f6; padding: 9px; overflow-x: auto; font-size: 8.6pt; }
+img { max-width: 100%; margin: 8px 0; }
+blockquote { border-left: 3px solid #999; margin: 8px 0; padding-left: 10px; color: #555; }
+hr { border: none; border-top: 1px solid #ddd; margin: 18px 0; }
+@media print {
+  h2, h3 { break-after: avoid; }
+  tr, img, pre, li { break-inside: avoid; }
+  table { font-size: 8.4pt; }
+}
+</style></head><body>
+<h1 id="gpt-sovits-v5">GPT-SoVITS V5 的严格无参考单说话人推理：条件通路审计与系统性负结果</h1>
+<p><strong>声音 C 实验论文 v1.0（开放域复核版）</strong><br />
+2026-11-21<br />
+基于 GPT-SoVITS V5dev（本地包 2026-10-06）的离线实验记录</p>
+<blockquote>
+<p><strong>范围与诚实声明</strong>：本文从“只输入日文文本、完全不读参考音频/文本/参考特征”的推理合同开始，不包含游戏解包、文本抽取等前置工作。所有数字来自本会话的本地评测；没有公开音频、角色语音或模型权重。文中把“合同通过”“自动指标部分通过”“人耳验收失败”分开写。最终结论是<strong>负结果</strong>，不是成功交付。</p>
+</blockquote>
+<hr />
+<h2 id="_1">摘要</h2>
+<p>本文研究一个问题：能否在不读取任何参考音频、参考文本或参考特征的条件下，用 GPT-SoVITS V5 单说话人地生成目标角色 Kan 的日文语音，并让训练学到的说话人参数真正进入声学模型。</p>
+<p>我们实现了严格无参考推理路径：S1 不使用提示，S2 使用 <code>prompt_len=0</code>、<code>refer_mel=None</code>、<code>refer_spec=None</code>，<code>ge</code> 直接取学习到的 <code>spk_emb</code>；<code>STRICT_NO_REF=1</code> 时 <code>torchaudio.load</code> 与 <code>set_ref_audio</code> 直接抛异常；先填满参考缓存再切到无参考时，缓存会被清空；参考目录改名后新进程仍能生成 48 kHz 音频。<strong>合同门通过。</strong></p>
+<p>但说话人身份没有成立。50 条 held-out 台词、3 个采样 seed 的 SV 均值为 <strong>0.8258</strong>，同文本参考控制为 <strong>0.8938</strong>；20 条完全新编的开放域文本 CER 为 <strong>0.0754</strong>，目标 SV 只有 <strong>0.7332</strong>，20 条输出两两相似度均值 <strong>0.823</strong>、最低 <strong>0.634</strong>。用户试听后判定“没有一个同一个人”。这不是一个可以靠均值掩盖的主观项；按验收标准，单说话人稳定性失败。</p>
+<p>我们进一步审计了条件通路，解释了为什么“看起来训练过”的 E2b 不是说话人模型：</p>
+<ul>
+<li>E2b 的 <code>spk_emb</code> 乘 0 后，20 句 SV 仍为 <strong>0.8039</strong>，正常约 <strong>0.8063</strong>；CFM 的 <code>spk_film</code> 是零初始化，<code>ge</code> 在该路径上是恒等。</li>
+<li><code>ge</code> 实际有两条消费路径：<code>enc_p.mrte</code> 的直接残差（E2b 中整段冻结）与 <code>wns1.enc.cond_layer</code> 的静态门控偏置（E2b 中训练过，但很弱）。</li>
+<li><code>spk_emb</code> 范数为 <strong>1.4622</strong>，参考 <code>ref_enc</code> 尺度为 <strong>25.34</strong>；<code>wns1</code> 中说话人分量的每通道 RMS 为 <strong>0.0332</strong>，只有该层 bias 的 <strong>0.41 倍</strong>。一个向量同时被两个相差 17.3 倍的标定点消费，标量缩放无法同时满足。</li>
+<li>E10–E18 的九组注入/解冻（E15 两个生成臂）全部失败：SV 0.541–0.778，CER 0.876–1.440；最“正确”的消费端 <code>enc_p.mrte</code> 和完整 <code>enc_p</code> 解冻后反而崩到 0.54。</li>
+</ul>
+<p>本文的贡献不是“又试了很多配置”，而是：</p>
+<ol>
+<li>给出严格无参考推理的可复核合同与失败边界；</li>
+<li>给出 held-out 台词与开放域新文本的对照，说明高 SV 可能只是语料/情绪匹配；</li>
+<li>给出条件通路的权重级审计，定位“训练参数没有进入声学模型”与“进入了但没有自由度”的区别；</li>
+<li>记录 C1M 只是静态母带，不能当作模型级说话人学习；</li>
+<li>把用户的人耳判定作为最终验收，而不是用自动指标替代。</li>
+</ol>
+<p><strong>关键词</strong>：GPT-SoVITS V5；无参考 TTS；单说话人；说话人条件；负结果；条件通路审计；开放域评测</p>
+<hr />
+<h2 id="1">1. 引言</h2>
+<p>零样本 TTS 的常见设定是给 5–10 秒参考音频，模型复制音色。参考音频同时提供内容上下文和音色锚点。若把参考完全移除，只留文本，模型必须从训练中固化一个说话人身份；这比“少样本微调”更苛刻，因为它不允许推理时任何音频、文本或缓存特征。</p>
+<p>我们的初始目标是：</p>
+<ul>
+<li>推理只输入日文文本；</li>
+<li>不读参考音频、参考文本、参考语义 token、参考声学特征；</li>
+<li>训练学习一个固定的说话人参数；</li>
+<li>重启后不依赖参考文件；</li>
+<li>音色稳定、日语发音正确、韵律可接受。</li>
+</ul>
+<p>项目从 V5dev 开始。S1 是 AR GPT，S2 是条件 CFM/DiT + 48 kHz vocoder。V5 原生的音色路径是 <code>reference audio → ref_enc → ge</code>，<code>ge</code> 同时影响 <code>enc_p</code> 和 <code>wns1</code>。严格无参考意味着把这条路径替换成一个<strong>学习到的常量向量</strong>；这要求该向量在训练中真正进入声学计算，而不只是被保存。</p>
+<p>真正做下去后，问题分成三层：</p>
+<ol>
+<li><strong>合同层</strong>：无参考路径是否真的不读文件、不读缓存、重启可用？</li>
+<li><strong>优化层</strong>：训练参数是否真的进入声学模型？进入后是否有足够的说话人自由度？</li>
+<li><strong>感知层</strong>：自动 SV/CER 是否等于“同一个人”？开放域新文本是否仍然稳定？</li>
+</ol>
+<p>本文按这三层组织。第二层的审计是核心：它推翻了“E2b 已经学会 Kan”的早期判断。</p>
+<h3 id="11">1.1 贡献</h3>
+<ul>
+<li><strong>合同审计</strong>：严格模式、缓存污染、参考目录隐藏、重启；四条都通过。</li>
+<li><strong>负结果阶梯</strong>：E0–E18，覆盖 <code>spk_emb</code>、<code>wns1</code>、CFM LoRA、FiLM、加性 <code>mu</code>、时间嵌入、<code>enc_p.mrte</code>、完整 <code>enc_p</code>；全部没有达到可用增益。</li>
+<li><strong>权重级解释</strong>：<code>ge</code> 的两条消费路径、两个标定点、<code>wns1</code> 的 bias 对比、<code>enc_p</code> 冻结状态。</li>
+<li><strong>开放域对照</strong>：20 句完全新编文本，CER 0.075，但 SV 0.733、pairwise 0.823；解释“读对”与“同一个人”不是一回事。</li>
+<li><strong>交付边界</strong>：C1M 是固定 EQ/压缩母带，不是说话人模型；不作为成功。</li>
+</ul>
+<hr />
+<h2 id="2">2. 系统与合同</h2>
+<h3 id="21-v5">2.1 V5 推理链</h3>
+<pre><code>日文文本
+  → S1 AR GPT（s1v3.ckpt）
+  → 语义 token
+  → enc_p / quantizer
+  → CFM DiT（22 blocks，流匹配）
+  → HiFi-GAN（48 kHz）
+  → waveform
+</code></pre>
+<p>参考条件路径：</p>
+<pre><code>参考 audio → ref_enc → ge（512 维全局音色嵌入）
+</code></pre>
+<p><code>ge</code> 在 S2 中有两个消费者：</p>
+<ol>
+<li><code>enc_p</code> → <code>TextEncoder</code> → <code>mrte</code>：<code>x = cross_attn(...) + ssl_enc + ge</code>，直接残差，广播到每帧；</li>
+<li><code>wns1</code> → <code>Encoder</code> → <code>WN.cond_layer</code>：<code>(B,512,1) → (B,8192,1)</code>，作为 8 层门控的静态前激活偏置。</li>
+</ol>
+<p>图 1 只画模块关系，不表示本文已验证的因果强度。</p>
+<p><img alt="图 1：V5 推理链与两条 ge 来源" src="figures/fig1_pipeline.png" /></p>
+<h3 id="22">2.2 严格无参考路径</h3>
+<p>实现入口是 <code>code/infer_noref.py</code>；默认 <code>infer.py</code> 调用它。关键设置：</p>
+<ul>
+<li><code>prompts=None</code>，S1 不使用参考提示；</li>
+<li><code>prompt_len=0</code>，CFM 的 prompt 形状为 <code>[B,100,0]</code>；</li>
+<li><code>refer_mel=None</code>、<code>refer_spec=None</code>；</li>
+<li><code>ge = vits_model.spk_emb</code>，跳过 <code>ref_enc</code>；</li>
+<li>输出 48 kHz。</li>
+</ul>
+<p>严格模式 <code>STRICT_NO_REF=1</code> 做两件事：</p>
+<pre><code class="language-python">torchaudio.load = _deny_load
+TTS.set_ref_audio = _deny_set_ref
+</code></pre>
+<p>不是“不调用”，而是“调用就抛异常”。这让隐藏的参考读取无法静默通过。</p>
+<h3 id="23">2.3 训练侧</h3>
+<p>E2b 的训练配置：</p>
+<ul>
+<li>底模 <code>s2Gv5dev.pth</code>，不是 turbo；</li>
+<li>新增 <code>spk_emb: nn.Parameter(1,512,1)</code>；</li>
+<li>CFM LoRA r=16，target <code>to_k,to_q,to_v,to_out.0</code>；</li>
+<li>E2 起解冻 <code>wns1</code>；</li>
+<li>冻结 <code>enc_p</code>、<code>quantizer</code>、<code>ref_enc</code>、<code>ssl_proj</code>；</li>
+<li><code>prompt_len=0</code>，<code>refer_mel=None</code>，<code>refer_spec=None</code>；</li>
+<li>loss 从第 0 帧覆盖全部目标帧；<code>cfg=0</code>。</li>
+</ul>
+<p>初始化 <code>spk_emb = ref_enc(neutral)</code>，<code>neutral</code> 是零频谱，不来自任何音频；之后只由训练更新。这个初始化是“训练期构造”，不是推理期参考特征。</p>
+<h3 id="24-c1m">2.4 固定 C1M 母带</h3>
+<p>C1M 是推理后的静态处理：</p>
+<ul>
+<li>32 段 FIR 低切，<code>&lt;600 Hz</code>，204 Hz 约 −4.7 dB；</li>
+<li>软压缩；</li>
+<li><code>2 kHz</code> 高架 <code>+0.75 dB</code>；</li>
+<li>峰值 <code>0.98</code>，RMS <code>0.1228</code>。</li>
+</ul>
+<p>它不是声学模型，不训练，不读运行时参考。C1M 只把 LTAS/RMS 拉近训练语料统计；本文把它单独列为 wrapper，避免把“频响更像”误写成“音色更像”。</p>
+<hr />
+<h2 id="3">3. 数据与划分</h2>
+<p>原始语料为 1,200 句单说话人日文语音，约 102.1 分钟。清洗后保留 1,100 句训练、50 句验证、50 句测试；按 <code>source_id_group</code> 划分，避免同一来源跨 split。测试集不参与训练。</p>
+<table>
+<thead>
+<tr>
+<th>split</th>
+<th style="text-align: right;">n</th>
+<th style="text-align: right;">时长（秒）</th>
+<th>用途</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>train</td>
+<td style="text-align: right;">1,100</td>
+<td style="text-align: right;">5,622.68</td>
+<td>S2 训练</td>
+</tr>
+<tr>
+<td>val</td>
+<td style="text-align: right;">50</td>
+<td style="text-align: right;">246.514</td>
+<td>诊断/调参</td>
+</tr>
+<tr>
+<td>test</td>
+<td style="text-align: right;">50</td>
+<td style="text-align: right;">256.995</td>
+<td>held-out 评测</td>
+</tr>
+</tbody>
+</table>
+<p>划分文件 <code>data/split.json</code>，seed 20261120，三份 SHA-256 见 <code>paper/data/splits.csv</code>。</p>
+<h3 id="31-20">3.1 开放域 20 句</h3>
+<p>为了区分“held-out 台词”与“真正没说过的新文本”，我们另写 20 句日文，主题为日常场景（咖啡、伞、电车、洗衣、散步等），不复制角色口癖，不来自 train/val/test。文本在 <code>data/unseen20.txt</code>。</p>
+<p>这 20 句只用于推理与评测，不参与任何训练；推理时只给文本，不读参考。它们不代表大规模开放域，但足以回答“是不是只会背训练台词”。</p>
+<hr />
+<h2 id="4">4. 评测</h2>
+<h3 id="41">4.1 指标</h3>
+<ul>
+<li><strong>SV</strong>：ERes2NetV2 说话人嵌入与目标质心的余弦；目标质心由 20 条训练参考计算，只用于评测，不进入推理。</li>
+<li><strong>CER</strong>：Whisper small 日文转写与目标文本的字符错误率；去掉标点/空白后计算。</li>
+<li><strong>pairwise SV</strong>：同一批输出两两之间的余弦，用于检查“是不是同一个人”，不依赖目标质心。</li>
+<li><strong>LTAS/RMS/CPP</strong>：<code>&lt;500 Hz</code> 份额、<code>2–8 kHz</code> 份额、RMS、倒谱突出度；用于 wrapper 与 vocoder 诊断。</li>
+<li><strong>长重复</strong>：CER &gt; 1 的样本计数；单独报告，不用均值掩盖。</li>
+</ul>
+<h3 id="42">4.2 统计口径</h3>
+<ul>
+<li>20 句实验只做诊断，不当作 confirmatory；50 句 test × 3 seeds 才作为 held-out 主表。</li>
+<li>报告均值、最小值、范围、P90；CER 长尾单独列出。</li>
+<li>不做“best-of-k”选择；不把单次最高值写成稳定增益。</li>
+<li>人耳判定单独列出，不把自动指标当成人耳验收。</li>
+</ul>
+<h3 id="43">4.3 人耳</h3>
+<p>用户听取了 50 条 held-out 试听页中的 9/3/1 三句，以及 20 条开放域输出。用户判定：<strong>“就没有一个是同一个人的。”</strong> 这不是盲测，也不是 ABX；但它直接否定了“单说话人稳定”的验收项。本文把它作为最终主观结论，而不是用 SV 均值反驳。</p>
+<hr />
+<h2 id="5">5. 实验设计</h2>
+<h3 id="51">5.1 条件注入路线</h3>
+<p>所有实验都围绕“如何让一个固定学习向量进入 S2”：</p>
+<table>
+<thead>
+<tr>
+<th>路线</th>
+<th>注入点</th>
+<th>关键问题</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>E1</td>
+<td><code>spk_emb</code> + CFM LoRA</td>
+<td>只改注意力，能否改音色</td>
+</tr>
+<tr>
+<td>E2/E2b</td>
+<td>+ <code>wns1</code></td>
+<td>条件融合是否足够</td>
+</tr>
+<tr>
+<td>E3</td>
+<td>+ <code>bridge</code></td>
+<td>更多条件侧是否更好</td>
+</tr>
+<tr>
+<td>E10/E11</td>
+<td>纯 <code>spk_film</code></td>
+<td>FiLM 的幅度区间</td>
+</tr>
+<tr>
+<td>E12</td>
+<td><code>spk_emb</code> + <code>spk_film</code></td>
+<td>两者都训练/加载</td>
+</tr>
+<tr>
+<td>E13</td>
+<td>目标 <code>spk_emb</code> 初始化 + film</td>
+<td>方向正确是否有用</td>
+</tr>
+<tr>
+<td>E14</td>
+<td>零初始化 <code>spk_add(ge)</code> 加到 <code>mu</code></td>
+<td>加性注入是否避开乘性失真</td>
+</tr>
+<tr>
+<td>E15</td>
+<td><code>spk_emb</code> × 2.6 / × 17.3</td>
+<td>尺度是否是唯一问题</td>
+</tr>
+<tr>
+<td>E16</td>
+<td>DiT 时间嵌入 <code>spk_t</code></td>
+<td>不碰内容/条件的全局通道</td>
+</tr>
+<tr>
+<td>E17</td>
+<td>解冻 <code>enc_p.mrte</code></td>
+<td>正确消费端是否可用</td>
+</tr>
+<tr>
+<td>E18</td>
+<td>解冻完整 <code>enc_p</code></td>
+<td>内容编码器整体重训</td>
+</tr>
+</tbody>
+</table>
+<h3 id="52">5.2 实验阶梯</h3>
+<p>完整表见 <code>paper/data/experiments.csv</code>；正文只列关键行。</p>
+<table>
+<thead>
+<tr>
+<th>实验</th>
+<th style="text-align: right;">n</th>
+<th style="text-align: right;">SV</th>
+<th style="text-align: right;">CER</th>
+<th>结果</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>E1 spk_emb+LoRA</td>
+<td style="text-align: right;">20</td>
+<td style="text-align: right;">0.7913</td>
+<td style="text-align: right;">0.2668</td>
+<td>音色差 0.093</td>
+</tr>
+<tr>
+<td>E2 e1 +wns1</td>
+<td style="text-align: right;">20</td>
+<td style="text-align: right;">0.8068</td>
+<td style="text-align: right;">—</td>
+<td>+0.016</td>
+</tr>
+<tr>
+<td>E2b +wns1 2ep</td>
+<td style="text-align: right;">20</td>
+<td style="text-align: right;">0.8063</td>
+<td style="text-align: right;">0.3523</td>
+<td>平台；后被证明未接入 CFM</td>
+</tr>
+<tr>
+<td>E3 +bridge</td>
+<td style="text-align: right;">20</td>
+<td style="text-align: right;">0.7930</td>
+<td style="text-align: right;">—</td>
+<td>下降</td>
+</tr>
+<tr>
+<td>E4 clean_v2</td>
+<td style="text-align: right;">20</td>
+<td style="text-align: right;">0.7948</td>
+<td style="text-align: right;">0.8957</td>
+<td>无收益，1 条 runaway</td>
+</tr>
+<tr>
+<td>P1/P1b/P1c prefix</td>
+<td style="text-align: right;">20</td>
+<td style="text-align: right;">.7977/.5931/.7522</td>
+<td style="text-align: right;">—/—/.3424</td>
+<td>不是有效声学锚</td>
+</tr>
+<tr>
+<td>S1 clean</td>
+<td style="text-align: right;">20</td>
+<td style="text-align: right;">0.8039</td>
+<td style="text-align: right;">1.4647</td>
+<td>内容变差</td>
+</tr>
+<tr>
+<td>E5 film+wns1</td>
+<td style="text-align: right;">20</td>
+<td style="text-align: right;">0.7990</td>
+<td style="text-align: right;">0.8940</td>
+<td>混合，不是纯 P2</td>
+</tr>
+<tr>
+<td>E10 film-only</td>
+<td style="text-align: right;">20</td>
+<td style="text-align: right;">0.7725</td>
+<td style="text-align: right;">0.8936</td>
+<td>仍退化</td>
+</tr>
+<tr>
+<td>E11 film-only</td>
+<td style="text-align: right;">20</td>
+<td style="text-align: right;">0.7684</td>
+<td style="text-align: right;">0.8765</td>
+<td>仍差</td>
+</tr>
+<tr>
+<td>E12 spk_emb+film</td>
+<td style="text-align: right;">20</td>
+<td style="text-align: right;">0.7767</td>
+<td style="text-align: right;">0.8798</td>
+<td>仍差</td>
+</tr>
+<tr>
+<td>E13 target-init</td>
+<td style="text-align: right;">20</td>
+<td style="text-align: right;">0.7784</td>
+<td style="text-align: right;">0.9061</td>
+<td>仍差</td>
+</tr>
+<tr>
+<td>E14 spk_add</td>
+<td style="text-align: right;">20</td>
+<td style="text-align: right;">0.7743</td>
+<td style="text-align: right;">0.8851</td>
+<td>仍差</td>
+</tr>
+<tr>
+<td>E15a/b scale</td>
+<td style="text-align: right;">20</td>
+<td style="text-align: right;">.7644/.7484</td>
+<td style="text-align: right;">.8889/1.4273</td>
+<td>尺度不成立</td>
+</tr>
+<tr>
+<td>E16 spk_t</td>
+<td style="text-align: right;">20</td>
+<td style="text-align: right;">0.7611</td>
+<td style="text-align: right;">0.8859</td>
+<td>仍差</td>
+</tr>
+<tr>
+<td>E17 enc_p.mrte</td>
+<td style="text-align: right;">20</td>
+<td style="text-align: right;">0.5410</td>
+<td style="text-align: right;">1.4404</td>
+<td>内容崩</td>
+</tr>
+<tr>
+<td>E18 enc_p-full</td>
+<td style="text-align: right;">20</td>
+<td style="text-align: right;">0.5448</td>
+<td style="text-align: right;">1.4258</td>
+<td>内容崩</td>
+</tr>
+<tr>
+<td>C1M-50</td>
+<td style="text-align: right;">50</td>
+<td style="text-align: right;">0.8128</td>
+<td style="text-align: right;">0.2874</td>
+<td>wrapper</td>
+</tr>
+<tr>
+<td>Open20</td>
+<td style="text-align: right;">20</td>
+<td style="text-align: right;">0.7332</td>
+<td style="text-align: right;">0.0754</td>
+<td>用户判定不同人</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="6">6. 结果</h2>
+<h3 id="61">6.1 合同门</h3>
+<p>四条检查都通过：</p>
+<ol>
+<li><code>STRICT_NO_REF=1</code> 下新进程生成 48 kHz 音频，未触发 <code>torchaudio.load</code>/<code>set_ref_audio</code>；</li>
+<li>先 <code>set_ref_audio</code> 填满缓存，再走 <code>ref_free</code>：<code>prompt_semantic=None</code>、<code>refer_spec=[]</code>、<code>raw_audio</code> 不存在；</li>
+<li><code>data/kan/wavs</code> 改名后，新进程仍能生成；</li>
+<li>推理代码没有 <code>ref_enc</code> 分支，没有固定参考路径。</li>
+</ol>
+<p>这部分是本文唯一可以明确写“通过”的部分。它证明“文本直出、无参考文件、重启可用”，不证明音色。</p>
+<h3 id="62-held-out">6.2 held-out 自动指标</h3>
+<p>50 条 test × 3 seeds：</p>
+<table>
+<thead>
+<tr>
+<th>指标</th>
+<th style="text-align: right;">结果</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>SV 均值（合并）</td>
+<td style="text-align: right;"><strong>0.8258</strong></td>
+</tr>
+<tr>
+<td>SV 种子范围</td>
+<td style="text-align: right;">0.8241–0.8287</td>
+</tr>
+<tr>
+<td>CER 中位数</td>
+<td style="text-align: right;"><strong>0.2692</strong></td>
+</tr>
+<tr>
+<td>CER 均值</td>
+<td style="text-align: right;">0.4078</td>
+</tr>
+<tr>
+<td>CER P90</td>
+<td style="text-align: right;">0.5385</td>
+</tr>
+<tr>
+<td>长重复（CER&gt;1）</td>
+<td style="text-align: right;">2/150（1.3%）</td>
+</tr>
+<tr>
+<td>空输出</td>
+<td style="text-align: right;">0/150</td>
+</tr>
+</tbody>
+</table>
+<p>同文本参考控制 SV <strong>0.8938</strong>，无参考与控制差 <strong>0.068</strong>。这个差距是早期最容易被误读的地方：0.826 看起来不低，但它不等于“同一个人”。</p>
+<h3 id="63">6.3 训练侧全负</h3>
+<p>E10–E18 的 SV 全部低于 C1M 的 0.8128；E17/E18 更低到 0.541/0.545，同时 CER 约 1.43。图 2 把 20 句实验的 SV 与 CER 放在同一坐标上；右图是对数 CER，避免长尾被均值掩盖。</p>
+<p><img alt="图 2：20 句实验阶梯；左 SV，右 CER" src="figures/fig2_ladder.png" /></p>
+<p>关键不是“没调好”，而是不同注入点的失败模式高度一致：</p>
+<ul>
+<li>纯 FiLM：E10/E11 的 SV 0.772/0.768，CER 0.894/0.877；</li>
+<li><code>spk_emb</code> + film：E12 0.777/0.880；</li>
+<li>目标初始化：E13 0.778/0.906；</li>
+<li>加性 <code>mu</code>：E14 0.774/0.885；</li>
+<li>时间嵌入：E16 0.761/0.886；</li>
+<li>正确消费端 <code>enc_p.mrte</code>：E17 0.541/1.440；</li>
+<li>完整 <code>enc_p</code>：E18 0.545/1.426。</li>
+</ul>
+<p>如果只是“幅度太小”，SV 应随幅度单调升；实测没有。如果只是“注入点不对”，E16 不碰 <code>mu</code>/<code>cond</code> 也应至少不崩；实测仍差。E17/E18 则说明：一旦让内容编码器承担这个目标，它会用内容可懂度换 loss。</p>
+<h3 id="64-c1m">6.4 C1M：频响接近，不是音色</h3>
+<p>C1M 的 50 条指标：</p>
+<table>
+<thead>
+<tr>
+<th>系统</th>
+<th style="text-align: right;">SV</th>
+<th style="text-align: right;">CER</th>
+<th style="text-align: right;">&lt;500 Hz</th>
+<th style="text-align: right;">2–8 kHz</th>
+<th style="text-align: right;">RMS</th>
+<th style="text-align: right;">CPP</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>真值 test</td>
+<td style="text-align: right;">—</td>
+<td style="text-align: right;">—</td>
+<td style="text-align: right;">0.179</td>
+<td style="text-align: right;">0.1535</td>
+<td style="text-align: right;">0.1228</td>
+<td style="text-align: right;">0.1659</td>
+</tr>
+<tr>
+<td>E2b raw</td>
+<td style="text-align: right;">0.8241</td>
+<td style="text-align: right;">0.2900</td>
+<td style="text-align: right;">0.2337</td>
+<td style="text-align: right;">0.1269</td>
+<td style="text-align: right;">0.0866</td>
+<td style="text-align: right;">0.1262</td>
+</tr>
+<tr>
+<td>C1M</td>
+<td style="text-align: right;">0.8128</td>
+<td style="text-align: right;">0.2874</td>
+<td style="text-align: right;">0.1794</td>
+<td style="text-align: right;">0.1533</td>
+<td style="text-align: right;">0.117</td>
+<td style="text-align: right;">0.127</td>
+</tr>
+<tr>
+<td>C1H</td>
+<td style="text-align: right;">0.8139</td>
+<td style="text-align: right;">0.2907</td>
+<td style="text-align: right;">0.173</td>
+<td style="text-align: right;">0.170</td>
+<td style="text-align: right;">0.116</td>
+<td style="text-align: right;">0.127</td>
+</tr>
+</tbody>
+</table>
+<p>C1M 把低频和 2–8 kHz 份额拉得最接近真值，但 SV 比 raw <strong>低</strong> 0.011，CPP 几乎不变。图 3 显示：频带平衡可以修，倒谱突出度没有修。</p>
+<p><img alt="图 3：LTAS 频带与 CPP；C1M 只改频响" src="figures/fig3_bands.png" /></p>
+<p>因此 C1M 只能作为“母带 wrapper”，不能写成“模型学会了 Kan”。这一点在最终报告中反复标注，避免把后处理收益算成模型收益。</p>
+<h3 id="65">6.5 开放域：能读对，但不是同一个人</h3>
+<p>20 句完全新编文本：</p>
+<table>
+<thead>
+<tr>
+<th>指标</th>
+<th style="text-align: right;">开放域 20</th>
+<th style="text-align: right;">held-out C1M 50</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>CER 均值</td>
+<td style="text-align: right;"><strong>0.0754</strong></td>
+<td style="text-align: right;">0.2874</td>
+</tr>
+<tr>
+<td>SV 均值</td>
+<td style="text-align: right;"><strong>0.7332</strong></td>
+<td style="text-align: right;">0.8128</td>
+</tr>
+<tr>
+<td>SV 范围</td>
+<td style="text-align: right;">0.666–0.860</td>
+<td style="text-align: right;">—</td>
+</tr>
+<tr>
+<td>pairwise 均值</td>
+<td style="text-align: right;"><strong>0.823</strong></td>
+<td style="text-align: right;">—</td>
+</tr>
+<tr>
+<td>pairwise 最低</td>
+<td style="text-align: right;"><strong>0.634</strong></td>
+<td style="text-align: right;">—</td>
+</tr>
+<tr>
+<td>到目标质心均值</td>
+<td style="text-align: right;">0.730</td>
+<td style="text-align: right;">—</td>
+</tr>
+</tbody>
+</table>
+<p>开放域 CER 反而更好：句子更平、更少 <code>♪/……/～</code>，Whisper 更容易读对。但 SV 明显更低，pairwise 最低 0.634。图 4 左图是逐句 SV，右图是 20×20 相似度矩阵；对角线条纹之外，行/列差异很大。</p>
+<p><img alt="图 4：开放域逐句 SV 与两两相似度" src="figures/fig4_open.png" /></p>
+<p>这不是“某些句子内容错”，而是<strong>同一批输出之间的音色不稳定</strong>。用户听完后的“没有一个同一个人”与这个矩阵一致。</p>
+<h3 id="66">6.6 文本标点不是根因</h3>
+<p>9/3/1 三句被用户点名最差。我们做了原句 / 去标点 / 改读音三版：</p>
+<table>
+<thead>
+<tr>
+<th>句</th>
+<th style="text-align: right;">原句 CER/SV</th>
+<th style="text-align: right;">去标点 CER/SV</th>
+<th style="text-align: right;">改读音 CER/SV</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>09 <code>ん～……</code></td>
+<td style="text-align: right;">0.263 / 0.861</td>
+<td style="text-align: right;">0.316 / 0.716</td>
+<td style="text-align: right;">—</td>
+</tr>
+<tr>
+<td>03 <code>あはは……</code></td>
+<td style="text-align: right;">0.462 / 0.758</td>
+<td style="text-align: right;">0.360 / 0.770</td>
+<td style="text-align: right;">—</td>
+</tr>
+<tr>
+<td>01 <code>にひっ♪ じゃ…</code></td>
+<td style="text-align: right;">0.643 / 0.853</td>
+<td style="text-align: right;">0.308 / 0.814</td>
+<td style="text-align: right;">0.438 / 0.818</td>
+</tr>
+</tbody>
+</table>
+<p>09 原句反而最好；03 去标点略好，但 ASR 仍多出 <code>うっ…はははは…</code>；01 的 <code>じゃ</code> 被听成 <code>チャ</code>、<code>一言</code> 被听成 <code>意地が</code>，改读音能修一部分，但 <code>にひっ</code> 仍被听成 <code>へへへ</code>。没有一条统一文本规则能同时修三句。</p>
+<p>这说明：</p>
+<ul>
+<li>01 是发音/分词问题；</li>
+<li>03 是模型自己加的笑声/停顿；</li>
+<li>09 是语气/音色，不是标点。</li>
+</ul>
+<p>因此“文本清洗”不能替代说话人条件和韵律建模。</p>
+<hr />
+<h2 id="7">7. 机制解释</h2>
+<h3 id="71-ge">7.1 <code>ge</code> 的两条消费路径</h3>
+<p><code>TTS.py</code> 的无参考路径把 <code>ge=spk_emb</code> 传给 <code>decode_encp</code>，后者把同一个 <code>ge</code> 分给两处：</p>
+<table>
+<thead>
+<tr>
+<th>消费者</th>
+<th>方式</th>
+<th>E2b 是否训练</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>enc_p.mrte</code></td>
+<td><code>x = cross_attn(...) + ssl_enc + ge</code> 直接残差</td>
+<td><strong>否</strong>，ckpt 里 <code>enc_p*</code> key = 0</td>
+</tr>
+<tr>
+<td><code>wns1.enc.cond_layer</code></td>
+<td><code>(B,512,1)→(B,8192,1)</code> 静态门控偏置</td>
+<td><strong>是</strong>，但弱</td>
+</tr>
+</tbody>
+</table>
+<p><code>CFMV5.spk_film</code> 不在 E2b ckpt 里，加载后零初始化，<code>gamma=beta=0</code>，FiLM 恒等。因此 E2b 的“<code>spk_emb</code> + CFM”并没有把 <code>ge</code> 真正接进 CFM；这是早期“E2b 已学会 Kan”判断被推翻的直接原因。</p>
+<h3 id="72">7.2 双标定点</h3>
+<p><code>spk_emb</code> 范数 <strong>1.4622</strong>；参考 <code>ref_enc</code> 范数 <strong>25.34</strong>。<code>wns1</code> 的 <code>cond_layer</code>：</p>
+<ul>
+<li>权重有效范数 <strong>31.705</strong>；</li>
+<li>bias 每通道 RMS <strong>0.0804</strong>；</li>
+<li><code>spk_emb</code> 每通道 RMS <strong>0.0332</strong>，是 bias 的 <strong>0.41 倍</strong>；</li>
+<li>若拉到 25.34 尺度，每通道 RMS <strong>0.575</strong>，是 bias 的 <strong>7.15 倍</strong>。</li>
+</ul>
+<p>这不是“通道断了”，而是<strong>同一个向量被两个相差 17.3 倍的标定点共用</strong>。缩放只能放大模长，不能同时满足两个点；E15 的 ×2.6/×17.3 失败与这个分析一致。</p>
+<h3 id="73">7.3 内容通道不能承载全局身份</h3>
+<p>E14 把 <code>spk_add(ge)</code> 加到 <code>mu</code>。<code>mu</code>（text0）是 DiT 的内容指针；全局向量加在内容流上，模型能做的有用事情是记住训练集平均声学偏移。E14 零初始化、严格恒等起点，仍然 CER 0.8851，说明“加性而非乘性”不是问题，<strong>通道选择</strong>才是问题。</p>
+<p>E17/E18 进一步表明：让 <code>enc_p</code> 承担说话人目标，会把内容编码器推坏。E17（只解冻 <code>mrte</code>）SV 0.541/CER 1.440；E18（完整 <code>enc_p</code>）0.545/1.426，落在同一窄带。</p>
+<h3 id="74-c1m-vocoder">7.4 C1M 与 vocoder 的边界</h3>
+<p>D2 诊断显示：真实 mel 过同一个 V5 vocoder，CPP 只有 <strong>0.1260</strong>，与无参考 E2b 的 <strong>0.1262</strong> 几乎相同；真值约 0.1659。也就是说，vocoder 本身是 CPP 瓶颈之一，不是 CFM 单独的问题。P5 的 vocoder 微调能把 GT mel CPP 拉到 0.1644，但接回无参考后 SV 0.7424/CER 0.8939；说明“修 CPP”与“保内容/音色”在当前目标下冲突。</p>
+<p>本文不把 P5/P6/P7 作为主表，只把它们作为“不要用 STFT/波形残差换可懂度”的负结果记录在失败日志。</p>
+<hr />
+<h2 id="8">8. 失败分类</h2>
+<table>
+<thead>
+<tr>
+<th>类别</th>
+<th>现象</th>
+<th>代表实验</th>
+<th>结论</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>A 合同失败</td>
+<td>读参考/缓存</td>
+<td>—</td>
+<td>未发生；合同通过</td>
+</tr>
+<tr>
+<td>B 条件未接入</td>
+<td><code>ge</code> 被零 FiLM 吞掉</td>
+<td>E2b 零化</td>
+<td>训练参数不等于生效</td>
+</tr>
+<tr>
+<td>C 条件接入但无自由度</td>
+<td>双标定点 / 弱 socket</td>
+<td>E10–E16</td>
+<td>不可用</td>
+</tr>
+<tr>
+<td>D 条件接入但毁内容</td>
+<td>加性 <code>mu</code> / <code>enc_p</code></td>
+<td>E14/E17/E18</td>
+<td>不可用</td>
+</tr>
+<tr>
+<td>E 频响 wrapper</td>
+<td>C1M 改善 LTAS，不改善 SV/CPP</td>
+<td>C1M</td>
+<td>不是模型</td>
+</tr>
+<tr>
+<td>F 感知失败</td>
+<td>开放域 pairwise 0.634，用户否定</td>
+<td>Open20</td>
+<td>单说话人失败</td>
+</tr>
+<tr>
+<td>G 评测陷阱</td>
+<td>held-out SV 高，开放域低</td>
+<td>test50 vs Open20</td>
+<td>不能只看 held-out</td>
+</tr>
+</tbody>
+</table>
+<p>这张表是本文的核心：它不是“某一次训练没调好”，而是条件通路、内容通路、感知验收三层同时暴露问题。</p>
+<p><img alt="图 5：从合同到人耳的证伪链；合同通过不等于身份成立" src="figures/fig5_decision.png" /></p>
+<hr />
+<h2 id="9">9. 限制</h2>
+<ol>
+<li><strong>开放域只有 20 句</strong>，不是大规模 benchmark；它足以暴露身份漂移，不足以估计总体分布。</li>
+<li><strong>人耳不是盲测/ABX</strong>；用户知道系统，也知道目标。但它是否定验收，不能把“不显著”当作通过。</li>
+<li><strong>SV 目标质心来自训练参考</strong>；这是评测侧，不进入推理。SV 只衡量嵌入接近，不等于人耳同一个人。</li>
+<li><strong>Whisper CER 对拟声/呼吸/名字不稳定</strong>；本文把长重复和 P90 分开报告，不用均值掩盖。</li>
+<li><strong>E15/E16 的逐样本 JSON 未保留</strong>，只有均值；这两组的 CER 只能作为方向性证据，不能做逐样本统计。</li>
+<li><strong>未做多说话人、跨语言、跨风格</strong>；结论只适用于单说话人 Kan / 日文 / 当前 V5dev。</li>
+<li><strong>未上传音频、角色语音或权重</strong>；论文只保留 CSV、图与脚本。版权与角色语音边界见 README。</li>
+<li><strong>未做训练 seed 级重复</strong>：E2b 有 3 个采样 seed，但训练只有单 run；不能把采样稳定性当成训练稳定性。</li>
+</ol>
+<hr />
+<h2 id="10">10. 经验清单</h2>
+<p>如果要在 V5 上再做“无参考单说话人”，先做这五件事，再谈训练：</p>
+<ol>
+<li><strong>零化测试</strong>：把候选说话人参数置零，看 SV/CER 是否变化；不变就是没接上。</li>
+<li><strong>画消费路径</strong>：确认 <code>ge</code> 到底进 <code>enc_p</code>、<code>wns1</code>、CFM 还是只被保存；用 ckpt key 数量验证，不靠命名猜。</li>
+<li><strong>量 bias 对比</strong>：被训练的 socket 里，说话人分量是否大于该层自身 bias；小于 bias 时，别指望它主导音色。</li>
+<li><strong>开放域测试</strong>：held-out 台词高 SV 不代表新文本稳定；至少写 20 句不重复语料句式的新文本。</li>
+<li><strong>pairwise 与人耳</strong>：同批输出两两相似度、最低值、用户盲听；不要只用“到目标质心均值”。</li>
+</ol>
+<p>这五条能把“训练 2 epoch 才发现 CER 0.89”的循环提前终止。</p>
+<hr />
+<h2 id="11_1">11. 结论</h2>
+<p>本文实现了严格无参考的 V5 文本推理路径，并证明它在文件/缓存/重启层面成立。但“训练学习 Kan 的说话人身份”没有成立：</p>
+<ul>
+<li>held-out 台词 SV 0.8258，参考控制 0.8938；</li>
+<li>开放域新文本 SV 0.7332，pairwise 最低 0.634；</li>
+<li>用户判定“没有一个同一个人”；</li>
+<li>E10–E18 的九组条件注入/解冻（E15 两个生成臂）全部失败；</li>
+<li>C1M 只改善频响，不改善 SV/CPP，是 wrapper。</li>
+</ul>
+<p>因此，本文的结论是<strong>负结果</strong>：在当前冻结 V5 工件上，单说话人、真正无参考、稳定音色的目标没有达到。能交付的是“文本输入、无参考文件、重启可用的管线”和一份可复核的失败审计；不能交付“已训练学会 Kan 的无参考模型”。</p>
+<p>如果继续，必须先改架构（新增可训练的说话人条件并让它进入声学计算），或接受参考条件 V5。继续在冻结 ckpt 上换 lr/注入点，没有证据支持。</p>
+<hr />
+<h2 id="a">附录 A：复现命令</h2>
+<pre><code class="language-powershell">cd &quot;D:\杂活\甜蜜女友3\gsv-v5-reference-free&quot;
+$env:STRICT_NO_REF=&quot;1&quot;
+D:\DevCache\temp\dsh-ellEc6\gsv\v5\GPT-SoVITS-v5-20261006\runtime\python.exe infer.py `
+  --text &quot;おはようございます。今日はいい天気ですね。&quot; `
+  --out samples\test.wav
+</code></pre>
+<p>仅复现统计/图（不需要模型）：</p>
+<pre><code class="language-bash">python paper/code/export_data.py
+python paper/code/make_figures.py
+python paper/code/validate_paper.py
+</code></pre>
+<h2 id="b">附录 B：数据字典</h2>
+<table>
+<thead>
+<tr>
+<th>文件</th>
+<th>内容</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>data/experiments.csv</code></td>
+<td>主实验阶梯、n、SV、CER、结论</td>
+</tr>
+<tr>
+<td><code>data/open_domain.csv</code></td>
+<td>20 句新编文本逐句 CER/SV/时长</td>
+</tr>
+<tr>
+<td><code>data/pairwise.csv</code></td>
+<td>20×20 说话人相似度矩阵</td>
+</tr>
+<tr>
+<td><code>data/bands.csv</code></td>
+<td>真值/raw/C1M/C1H 的 LTAS、RMS、CPP</td>
+</tr>
+<tr>
+<td><code>data/splits.csv</code></td>
+<td>train/val/test 数量、时长、SHA-256</td>
+</tr>
+</tbody>
+</table>
+<h2 id="c">附录 C：引用与边界</h2>
+<ul>
+<li>GPT-SoVITS：<a href="https://github.com/RVC-Boss/GPT-SoVITS">https://github.com/RVC-Boss/GPT-SoVITS</a></li>
+<li>OpenAI Whisper：<a href="https://github.com/openai/whisper">https://github.com/openai/whisper</a></li>
+<li>ERes2NetV2：本项目的 speaker verification 评测模型；具体权重随 V5 包提供。</li>
+<li>公开的 V5 无参考说话人参数方法：检索未发现；社区“零参考”多为随包参考音频 + 台本。唯一可训练说话人张量先例是 2024 年未合并 PR #466（S1 <code>y_emb</code>），不是 V5，也没有成功指标。</li>
+</ul>
+<p>本文不包含音频、角色语音或模型权重；角色名与作品名仅用于说明实验对象。</p>
+</body></html>

@@ -1,0 +1,4 @@
+split,n,duration_sec,used_for,sha256
+train,1100,5622.68,S2 训练,7db241cd5aeda7fb915b4861d0e3617976fd49b4955b284f81a79f730666eceb
+val,50,246.514,诊断/调参,ea906dba92a8ae49ed1fe0856a607277fa5f647fab3387d96f62de804d2c7bdc
+test,50,256.995,held-out 评测,05513bd23fdacb1c30aa5cedccde39a3e4676ed0a42d7f50d0a30d514cc163a4
